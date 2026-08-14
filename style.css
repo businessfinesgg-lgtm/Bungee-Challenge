@@ -1,0 +1,4153 @@
+:root {
+    color-scheme: dark;
+    font-family: Inter, ui-rounded, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #080d18;
+}
+
+body {
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+.game-container,
+.canvas-wrapper {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+}
+
+.canvas-wrapper {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: #72c7e8;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+.game-hud {
+    position: absolute;
+    z-index: 5;
+    top: max(14px, env(safe-area-inset-top));
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    display: grid;
+    grid-template-columns: minmax(92px, 140px) minmax(180px, 280px) minmax(92px, 140px);
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.hud-card,
+.booster-status {
+    border: 1px solid rgba(255,255,255,.24);
+    background: linear-gradient(145deg, rgba(12,22,40,.78), rgba(5,10,20,.55));
+    box-shadow: 0 12px 35px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
+    backdrop-filter: blur(14px) saturate(1.25);
+    -webkit-backdrop-filter: blur(14px) saturate(1.25);
+}
+
+.hud-card {
+    min-width: 92px;
+    padding: 9px 16px 10px;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hud-label,
+.booster-label {
+    color: rgba(255,255,255,.68);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.hud-value {
+    margin-top: -1px;
+    color: #fff;
+    font-size: clamp(26px, 3.2vw, 42px);
+    line-height: 1;
+    font-weight: 900;
+    text-shadow: 0 3px 12px rgba(0,0,0,.45);
+}
+
+.booster-status {
+    --booster-progress: 0%;
+    justify-self: center;
+    min-width: 220px;
+    padding: 10px 14px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(-12px) scale(.96);
+    transition: opacity .2s ease, transform .2s ease, border-color .2s ease;
+}
+
+.booster-status.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    border-color: rgba(255,193,61,.75);
+    box-shadow: 0 12px 38px rgba(255,112,31,.24), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.booster-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    font-size: 20px;
+    background: linear-gradient(145deg, #ffe769, #ff7b24);
+    box-shadow: 0 5px 18px rgba(255,135,33,.4);
+}
+
+.booster-content { flex: 1; min-width: 0; }
+.booster-time { float: right; color: #fff; font-size: 12px; font-weight: 800; }
+.booster-track {
+    display: block;
+    clear: both;
+    height: 6px;
+    margin-top: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255,255,255,.16);
+}
+.booster-fill {
+    display: block;
+    width: var(--booster-progress);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ffe66a, #ff7a25);
+    box-shadow: 0 0 12px rgba(255,148,41,.75);
+}
+
+.game-screen {
+    position: absolute;
+    z-index: 10;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    text-align: center;
+    background: radial-gradient(circle at 50% 40%, rgba(40,104,168,.18), rgba(3,8,17,.64));
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.screen-panel {
+    width: min(92vw, 520px);
+    padding: clamp(24px, 5vw, 44px);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 30px;
+    color: #fff;
+    background: linear-gradient(150deg, rgba(12,24,46,.82), rgba(5,11,23,.62));
+    box-shadow: 0 30px 90px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.14);
+    backdrop-filter: blur(18px) saturate(1.25);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+
+.screen-kicker {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #8ad8ff;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .24em;
+}
+
+.game-screen h1,
+.game-screen h2 {
+    margin: 0 0 12px;
+    font-size: clamp(42px, 8vw, 78px);
+    line-height: .95;
+    letter-spacing: -.045em;
+    text-shadow: 0 8px 28px rgba(0,0,0,.35);
+}
+.game-screen h2 { font-size: clamp(34px, 6vw, 62px); }
+.game-screen p { margin: 8px 0; color: rgba(255,255,255,.8); font-size: clamp(15px, 2.2vw, 20px); }
+
+.reward-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+}
+.reward-list span {
+    padding: 9px 13px;
+    border: 1px solid rgba(255,255,255,.13);
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    font-size: 14px;
+}
+.final-result strong { color: #ffd45f; font-size: 1.35em; }
+
+.hidden { display: none; }
+
+button {
+    margin-top: 20px;
+    padding: 14px 26px;
+    border: 0;
+    border-radius: 16px;
+    color: #15100a;
+    background: linear-gradient(135deg, #ffe067, #ff8a2a);
+    box-shadow: 0 12px 30px rgba(255,127,32,.34), inset 0 1px 0 rgba(255,255,255,.5);
+    font: inherit;
+    font-size: 17px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform .15s ease, filter .15s ease;
+}
+button:hover { filter: brightness(1.08); transform: translateY(-2px); }
+button:active { transform: translateY(1px) scale(.98); }
+.shortcut { margin-top: 14px !important; font-size: 12px !important; opacity: .62; }
+
+.controls-hint {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    padding: 7px 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 999px;
+    color: rgba(255,255,255,.68);
+    background: rgba(3,8,18,.38);
+    backdrop-filter: blur(8px);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .game-hud {
+        grid-template-columns: 78px 1fr 78px;
+        gap: 7px;
+        top: max(8px, env(safe-area-inset-top));
+        left: max(8px, env(safe-area-inset-left));
+        right: max(8px, env(safe-area-inset-right));
+    }
+    .hud-card { min-width: 0; padding: 7px 8px 8px; border-radius: 14px; }
+    .hud-label { font-size: 8px; }
+    .hud-value { font-size: 25px; }
+    .booster-status { min-width: 0; width: 100%; padding: 8px 9px; border-radius: 14px; gap: 7px; }
+    .booster-icon { width: 28px; height: 28px; font-size: 16px; border-radius: 9px; }
+    .booster-label { font-size: 8px; }
+    .booster-time { font-size: 10px; }
+    .screen-panel { border-radius: 24px; }
+    .controls-hint { display: none; }
+}
+
+@media (max-height: 480px) {
+    .game-hud { top: 7px; }
+    .hud-card { padding-block: 5px; }
+    .hud-value { font-size: 24px; }
+    .screen-panel { padding: 20px 28px; }
+    .game-screen h1, .game-screen h2 { font-size: 38px; }
+    .reward-list { margin-top: 12px; }
+}
+
+/* Wyraźniejsze renderowanie i subtelne animacje HUD-u. */
+canvas {
+    image-rendering: auto;
+}
+
+.score-pop {
+    animation: scorePop .26s cubic-bezier(.2, .9, .3, 1.35);
+}
+
+@keyframes scorePop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.28) rotate(-3deg); text-shadow: 0 0 24px rgba(255,221,91,.9); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+/* Ostry canvas: rozmiar CSS odpowiada viewportowi, a bufor ustawia JavaScript. */
+#gameCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    image-rendering: auto;
+}
+.corner-actions{position:absolute;z-index:12;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));display:flex;gap:8px}.icon-button{margin:0;width:44px;height:44px;padding:0;border-radius:14px;color:#fff;background:rgba(5,12,24,.62);border:1px solid rgba(255,255,255,.2);box-shadow:0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(12px);font-size:18px}.secondary-hud{position:absolute;z-index:6;top:max(84px,calc(env(safe-area-inset-top) + 72px));left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;pointer-events:none}.secondary-hud span{padding:6px 10px;border-radius:999px;color:#fff;background:rgba(4,10,21,.5);border:1px solid rgba(255,255,255,.16);font-size:11px;font-weight:900;letter-spacing:.05em;backdrop-filter:blur(10px)}#comboDisplay{color:#ffe477}#powerStatus:empty{display:none}#powerStatus.active{display:inline-block}.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.results-grid span{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(255,255,255,.07);font-size:13px;color:rgba(255,255,255,.72)}.results-grid strong{display:block;margin-top:4px;color:#fff;font-size:24px}.screen-panel.compact{max-width:460px}@media(max-width:640px){.corner-actions{right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom))}.icon-button{width:40px;height:40px}.secondary-hud{top:max(69px,calc(env(safe-area-inset-top) + 61px));gap:5px}.secondary-hud span{padding:5px 7px;font-size:9px}}
+
+
+/* Czytelniejszy HUD poziomu i osobny panel bonusów */
+.hud-hidden{display:none!important}.level-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:118px;padding:8px 14px;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:rgba(5,12,24,.55);box-shadow:0 10px 30px rgba(0,0,0,.22);backdrop-filter:blur(14px);color:#fff;font-weight:900;text-transform:uppercase;letter-spacing:.07em}.level-card span:first-child{font-size:11px;color:rgba(255,255,255,.72)}.level-card span:last-child{font-size:14px;color:#ffe477}.power-dock{position:absolute;z-index:9;left:max(14px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none}.power-card{--power-progress:0%;position:relative;display:none;align-items:center;gap:9px;width:184px;padding:9px 11px 11px;overflow:hidden;border:1px solid rgba(255,255,255,.2);border-radius:15px;background:rgba(4,10,21,.68);box-shadow:0 10px 28px rgba(0,0,0,.25);backdrop-filter:blur(14px);color:#fff;animation:powerIn .22s ease-out}.power-card.active{display:flex}.power-card i{position:absolute;left:0;bottom:0;width:var(--power-progress);height:3px;background:currentColor;box-shadow:0 0 10px currentColor;transition:width .08s linear}.power-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:rgba(255,255,255,.1);font-size:19px}.power-copy{min-width:0;display:flex;flex:1;align-items:center;justify-content:space-between;gap:7px}.power-copy strong{overflow:hidden;text-overflow:ellipsis;font-size:11px;letter-spacing:.03em}.power-copy small{font-size:10px;font-weight:900;white-space:nowrap}.speed-power{color:#ffd45b}.slow-power{color:#bca7ff}.shield-power{color:#7eeeff}@keyframes powerIn{from{opacity:0;transform:translateX(-12px) scale(.96)}to{opacity:1;transform:none}}@media(max-width:640px){.level-card{min-width:92px;padding:6px 9px;border-radius:14px}.level-card span:first-child{font-size:9px}.level-card span:last-child{font-size:11px}.power-dock{left:max(8px,env(safe-area-inset-left));top:auto;bottom:max(60px,calc(env(safe-area-inset-bottom) + 52px));transform:none;gap:5px}.power-card{width:154px;padding:7px 8px 9px;border-radius:12px}.power-icon{width:28px;height:28px;flex-basis:28px;font-size:16px}.power-copy strong{font-size:9px}.power-copy small{font-size:9px}}
+
+/* Flappy 2.0: wydarzenia, Fever i losowe przedmioty */
+.event-banner{position:absolute;left:50%;top:112px;z-index:18;transform:translate(-50%,-18px) scale(.94);opacity:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 22px;border:1px solid rgba(255,255,255,.38);border-radius:18px;background:linear-gradient(135deg,rgba(13,19,40,.9),rgba(57,30,86,.86));box-shadow:0 14px 35px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.18);backdrop-filter:blur(10px);color:#fff;text-align:center}.event-banner strong{font-size:15px;letter-spacing:.11em}.event-banner span{font-size:12px;opacity:.78}.event-banner.show{animation:event-pop 3.2s ease both}@keyframes event-pop{0%{opacity:0;transform:translate(-50%,-20px) scale(.9)}12%,72%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-8px) scale(.97)}}
+.fever-meter{position:absolute;left:50%;bottom:max(22px,env(safe-area-inset-bottom));z-index:12;transform:translateX(-50%);width:min(300px,46vw);display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:999px;background:rgba(8,14,30,.62);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.08em;pointer-events:none}.fever-meter i{height:7px;flex:1;border-radius:99px;background:rgba(255,255,255,.13);overflow:hidden}.fever-meter b{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ffb000,#ff3d2e,#ff2bd6);box-shadow:0 0 12px #ff5b2e;transition:width .2s ease}
+.mini-effects{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(82px,calc(env(safe-area-inset-bottom) + 62px));z-index:13;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none}.mini-effects span{display:none;padding:7px 10px;border-radius:12px;background:rgba(8,14,30,.72);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(8px);color:#fff;font-size:11px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.2)}.mini-effects span.active{display:block;animation:badge-in .25s ease}@keyframes badge-in{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+@media(max-width:680px){.event-banner{top:92px;max-width:78vw;padding:8px 15px}.fever-meter{bottom:max(14px,env(safe-area-inset-bottom));width:min(260px,58vw)}.mini-effects{right:10px;bottom:62px}.mini-effects span{font-size:10px;padding:6px 8px}}
+
+/* Kamera jako tło gry. Canvas pozostaje przezroczysty. */
+.camera-feed {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    transform: scaleX(-1);
+    background: #05070c;
+}
+
+#gameCanvas { z-index: 1; }
+
+.camera-button {
+    margin-top: 18px;
+}
+.camera-button.active {
+    background: linear-gradient(135deg, #7fffc4, #55baff);
+}
+.camera-message {
+    min-height: 1.4em;
+    font-size: 13px !important;
+}
+.camera-message.error { color: #ffb4b4 !important; }
+
+.motion-hud {
+    position: absolute;
+    z-index: 13;
+    left: max(14px, env(safe-area-inset-left));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: min(220px, 42vw);
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 14px;
+    background: rgba(4,10,21,.58);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    pointer-events: none;
+}
+.motion-hud > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.motion-hud i {
+    display: block;
+    height: 5px;
+    margin-top: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255,255,255,.14);
+}
+.motion-hud b {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: currentColor;
+    transition: width .08s linear;
+}
+.motion-hud.detected { transform: scale(1.03); }
+
+@media (max-width: 640px) {
+    .motion-hud { left: 8px; bottom: 8px; width: min(180px, 48vw); font-size: 9px; }
+}
+
+
+/* Twarda blokada orientacji: gra działa wyłącznie w poziomie. */
+.orientation-screen {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: none;
+    place-items: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 35%, #173759, #050912 72%);
+    text-align: center;
+}
+.orientation-panel {
+    width: min(92vw, 430px);
+    padding: 30px 26px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 28px;
+    color: #fff;
+    background: rgba(7,15,30,.78);
+    box-shadow: 0 28px 80px rgba(0,0,0,.48);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+.orientation-panel h2 { margin: 8px 0 10px; font-size: clamp(30px, 8vw, 48px); }
+.orientation-panel p { margin: 0; color: rgba(255,255,255,.78); line-height: 1.45; }
+.rotate-phone { font-size: 58px; line-height: 1; animation: rotateHint 1.5s ease-in-out infinite alternate; }
+@keyframes rotateHint { from { transform: rotate(0deg); } to { transform: rotate(18deg); } }
+body.portrait-locked .orientation-screen { display: grid; }
+body.portrait-locked .game-hud,
+body.portrait-locked .power-dock,
+body.portrait-locked .event-banner,
+body.portrait-locked .fever-meter,
+body.portrait-locked .mini-effects,
+body.portrait-locked .corner-actions,
+body.portrait-locked .motion-hud,
+body.portrait-locked .controls-hint { visibility: hidden; }
+
+
+/* Tryb immersyjny / odzyskiwanie pełnego ekranu. */
+:fullscreen, :-webkit-full-screen {
+    width: 100%;
+    height: 100%;
+    background: #050912;
+}
+
+.fullscreen-screen {
+    position: fixed;
+    z-index: 1100;
+    inset: 0;
+    display: none;
+    place-items: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 35%, #173759, #050912 72%);
+    text-align: center;
+}
+.fullscreen-screen.show { display: grid; }
+.fullscreen-icon { font-size: 58px; line-height: 1; }
+
+/* Zmniejsza ryzyko pojawiania się pasków UI przy zmianie orientacji. */
+html, body, .game-container, .canvas-wrapper {
+    min-width: 100%;
+    min-height: 100%;
+}
+body {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================================================
+   WERSJA PORTRAIT — telefon pionowo
+   ========================================================= */
+.orientation-screen,
+.fullscreen-screen { display: none !important; }
+
+/* Plansza wypełnia pionowy viewport bez wymuszania obrotu/fullscreen. */
+.game-container,
+.canvas-wrapper {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+}
+
+/* HUD dopasowany do wąskiego ekranu. */
+.game-hud {
+    top: max(10px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    grid-template-columns: 78px minmax(100px, 1fr) 78px;
+    gap: 7px;
+}
+.hud-card { min-width: 0; padding: 7px 8px 8px; border-radius: 14px; }
+.hud-value { font-size: clamp(22px, 7vw, 32px); }
+.level-card { min-width: 0; padding: 7px 6px; border-radius: 14px; }
+.level-card span:first-child { font-size: 8px; }
+.level-card span:last-child { font-size: 10px; }
+
+.event-banner { top: max(78px, calc(env(safe-area-inset-top) + 66px)); max-width: 88vw; }
+.power-dock {
+    left: max(8px, env(safe-area-inset-left));
+    top: auto;
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 62px));
+    transform: none;
+}
+.power-card { width: 142px; padding: 6px 7px 8px; }
+.power-icon { width: 26px; height: 26px; flex-basis: 26px; font-size: 15px; }
+.power-copy strong, .power-copy small { font-size: 8px; }
+
+.motion-hud {
+    left: max(8px, env(safe-area-inset-left));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: min(180px, 48vw);
+    font-size: 9px;
+}
+.controls-hint { display: none; }
+.fever-meter {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: min(210px, 45vw);
+    transform: translateX(-15%);
+}
+.corner-actions {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.screen-panel {
+    width: min(92vw, 420px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: clamp(20px, 6vw, 34px);
+}
+.screen-panel h1,
+.screen-panel h2 { font-size: clamp(30px, 10vw, 48px); }
+.reward-list { gap: 7px; }
+
+@media (orientation: landscape) {
+    /* Gra nadal działa po przypadkowym obrocie, ale zachowuje pionową planszę
+       wyśrodkowaną zamiast przebudowywać świat gry. */
+    .canvas-wrapper {
+        width: min(56.25vh, 100vw);
+        width: min(56.25dvh, 100vw);
+        margin: 0 auto;
+    }
+    body { background: #050912; }
+}
+
+/* Czytelny wskaźnik sterowania pompkami. */
+.motion-hud {
+    width: min(300px, 72vw);
+    padding: 10px 12px;
+    font-size: 12px;
+}
+.motion-hud i {
+    position: relative;
+    height: 10px;
+    margin-top: 8px;
+    overflow: visible;
+    border: 1px solid rgba(255,255,255,.22);
+}
+.motion-hud i::after {
+    content: "FLAP";
+    position: absolute;
+    right: 0;
+    top: -17px;
+    font-size: 8px;
+    letter-spacing: .08em;
+    opacity: .7;
+}
+.motion-hud i.ready {
+    box-shadow: 0 0 0 2px rgba(255,255,255,.28), 0 0 18px rgba(255,255,255,.35);
+}
+.motion-hud.detected {
+    transform: scale(1.06);
+}
+
+@media (max-width: 640px) {
+    .motion-hud {
+        left: 10px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: min(280px, 76vw);
+        font-size: 11px;
+    }
+}
+
+/* Po włączeniu kamery ekran startowy staje się półprzezroczystym komunikatem.
+   Gra nadal jest w READY i postać nie podlega grawitacji. */
+#startScreen.motion-waiting {
+    pointer-events: none;
+    background: rgba(3,8,17,.28);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+#startScreen.motion-waiting .screen-panel {
+    opacity: .88;
+    transform: scale(.94);
+}
+#startScreen.motion-waiting #cameraButton {
+    display: none;
+}
+
+/* =========================================================
+   v6 — strefa ustawienia, responsywny HUD i szybsze sterowanie
+   ========================================================= */
+.position-guide {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+}
+.position-guide-box {
+    width: 64%;
+    height: 64%;
+    max-width: 390px;
+    max-height: 650px;
+    border: 2px dashed rgba(255,255,255,.72);
+    border-radius: clamp(24px, 7vw, 44px);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.08), inset 0 0 30px rgba(255,255,255,.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 15px;
+    color: rgba(255,255,255,.9);
+    text-shadow: 0 2px 8px rgba(0,0,0,.6);
+    transition: border-color .12s ease, box-shadow .12s ease, opacity .2s ease;
+}
+.position-guide-box span { font-size: clamp(10px, 2.7vw, 13px); font-weight: 900; letter-spacing: .12em; }
+.position-guide-box small { margin-top: 3px; font-size: clamp(8px, 2.2vw, 10px); opacity: .7; }
+.position-guide.position-ok .position-guide-box {
+    border-style: solid;
+    border-color: rgba(103,255,176,.95);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.035), 0 0 22px rgba(83,255,166,.22);
+}
+.position-guide.position-ok .position-guide-box span::after { content: " ✓"; }
+
+/* Portrait HUD: każdy element ma własną przestrzeń i respektuje safe-area. */
+.game-hud {
+    grid-template-columns: minmax(64px, 82px) minmax(96px, 1fr) minmax(64px, 82px);
+    align-items: stretch;
+    gap: clamp(5px, 1.5vw, 8px);
+}
+.hud-card, .level-card { min-height: 52px; }
+.hud-label { font-size: clamp(7px, 2vw, 9px); }
+.hud-value { font-size: clamp(22px, 7vw, 31px); }
+.level-card span:first-child { font-size: clamp(7px, 2vw, 9px); }
+.level-card span:last-child { font-size: clamp(9px, 2.5vw, 12px); }
+
+/* Dolny HUD nie może nachodzić na przyciski ani Fever. */
+.motion-hud {
+    left: max(10px, env(safe-area-inset-left));
+    right: max(62px, calc(env(safe-area-inset-right) + 54px));
+    bottom: max(58px, calc(env(safe-area-inset-bottom) + 50px));
+    width: auto;
+    max-width: 330px;
+    font-size: clamp(10px, 2.7vw, 12px);
+}
+.fever-meter {
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: min(48vw, 230px);
+    transform: translateX(-50%);
+}
+.corner-actions { bottom: max(8px, env(safe-area-inset-bottom)); }
+.power-dock { bottom: max(108px, calc(env(safe-area-inset-bottom) + 96px)); }
+.mini-effects { bottom: max(110px, calc(env(safe-area-inset-bottom) + 98px)); }
+
+@media (max-width: 390px) {
+    .game-hud { grid-template-columns: 62px minmax(84px, 1fr) 62px; }
+    .hud-card, .level-card { min-height: 46px; padding: 5px 5px 6px; }
+    .hud-value { font-size: 22px; }
+    .motion-hud { right: 56px; bottom: max(56px, calc(env(safe-area-inset-bottom) + 48px)); }
+    .position-guide-box { width: 68%; height: 61%; }
+}
+
+/* Po starcie ekran instrukcji znika wizualnie, ale guide zostaje. */
+#startScreen.motion-waiting .screen-panel {
+    opacity: .22;
+    transform: scale(.90);
+}
+
+/* v7 — kalibracja i dwufazowe sterowanie pompką */
+.position-guide-box strong {
+    margin-top: 10px;
+    max-width: 88%;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(4,10,21,.56);
+    border: 1px solid rgba(255,255,255,.15);
+    font-size: clamp(9px, 2.5vw, 12px);
+    line-height: 1.25;
+    text-align: center;
+}
+.position-guide.calibrating .position-guide-box {
+    border-color: rgba(255,213,91,.95);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.12), 0 0 22px rgba(255,211,82,.18);
+}
+.position-guide.phase-down .position-guide-box {
+    border-style: solid;
+    border-color: rgba(92,230,255,.95);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.035), 0 0 22px rgba(80,215,255,.2);
+}
+.position-guide.phase-up .position-guide-box {
+    border-style: solid;
+    border-color: rgba(116,255,166,.95);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.035), 0 0 22px rgba(90,255,154,.2);
+}
+.position-guide.position-ok .position-guide-box span::after { content: ""; }
+.motion-hud i.phase-down b { background: linear-gradient(90deg,#52d9ff,#2689ff); }
+.motion-hud i.phase-up b { background: linear-gradient(90deg,#7dffb2,#19d67c); }
+@media (max-width: 390px) {
+    .position-guide-box { width: 72%; height: 62%; padding-top: 12px; }
+    .position-guide-box strong { max-width: 94%; }
+}
+
+/* v8: MediaPipe pose overlay + gesture picker */
+.pose-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;transform:scaleX(-1)}
+#gameCanvas{position:relative;z-index:3}
+.position-guide,.game-hud,.power-dock,.event-banner,.fever-meter,.mini-effects,.corner-actions,.game-screen,.motion-hud,.controls-hint{z-index:4}
+.gesture-picker{display:flex;gap:8px;width:min(360px,86vw);margin:8px auto 12px}
+.gesture-option{flex:1;border:1px solid rgba(255,255,255,.24);background:rgba(10,18,35,.76);color:#fff;border-radius:12px;padding:10px 8px;font-weight:800;font-size:12px}
+.gesture-option.active{outline:2px solid rgba(80,230,160,.9);background:rgba(20,80,60,.72)}
+.position-guide.pose-missing .position-guide-box{border-color:#ff6b75!important;box-shadow:0 0 0 999px rgba(0,0,0,.17),0 0 24px rgba(255,70,80,.18)}
+.position-guide.position-ok .position-guide-box{border-color:#59f3a8!important}
+@media(max-width:420px){.gesture-option{font-size:10px;padding:8px 5px}.gesture-picker{gap:6px}}
+
+/* =========================================================
+   v9 — HUD responsywny pod realne ekrany telefonów
+   ========================================================= */
+:root {
+    --safe-top: max(8px, env(safe-area-inset-top));
+    --safe-right: max(8px, env(safe-area-inset-right));
+    --safe-bottom: max(8px, env(safe-area-inset-bottom));
+    --safe-left: max(8px, env(safe-area-inset-left));
+}
+
+.game-hud {
+    top: var(--safe-top);
+    left: var(--safe-left);
+    right: var(--safe-right);
+    grid-template-columns: minmax(58px, 20vw) minmax(94px, 1fr) minmax(58px, 20vw);
+    gap: clamp(4px, 1.6vw, 8px);
+    align-items: stretch;
+}
+.hud-card, .level-card {
+    min-width: 0;
+    min-height: 48px;
+    padding: 6px 5px;
+    border-radius: 12px;
+}
+.hud-label { font-size: clamp(7px, 2vw, 9px); }
+.hud-value { font-size: clamp(20px, 6.8vw, 30px); }
+.level-card span:first-child { font-size: clamp(7px, 1.9vw, 9px); }
+.level-card span:last-child { font-size: clamp(8px, 2.4vw, 11px); }
+
+.event-banner {
+    top: calc(var(--safe-top) + 58px);
+    width: min(82vw, 330px);
+}
+
+.position-guide-box {
+    width: min(72vw, 370px);
+    height: min(61vh, 600px);
+    max-height: calc(100dvh - 235px);
+    margin-top: 26px;
+    padding: 12px 10px 0;
+}
+.position-guide-box small,
+.position-guide-box strong {
+    max-width: 94%;
+    text-align: center;
+}
+
+.motion-hud {
+    left: var(--safe-left);
+    right: calc(var(--safe-right) + 50px);
+    bottom: calc(var(--safe-bottom) + 48px);
+    width: auto;
+    max-width: none;
+    padding: 7px 9px;
+    font-size: clamp(9px, 2.6vw, 11px);
+    border-radius: 12px;
+}
+.motion-hud i { height: 7px; margin-top: 5px; }
+.motion-hud i::after { display: none; }
+
+.fever-meter {
+    left: 50%;
+    bottom: var(--safe-bottom);
+    width: min(52vw, 220px);
+    transform: translateX(-50%);
+    padding: 6px 9px;
+    font-size: 8px;
+}
+.corner-actions {
+    right: var(--safe-right);
+    bottom: var(--safe-bottom);
+    gap: 5px;
+}
+.icon-button { width: 40px; height: 40px; border-radius: 12px; font-size: 16px; }
+
+.power-dock {
+    left: var(--safe-left);
+    top: calc(var(--safe-top) + 68px);
+    bottom: auto;
+    transform: none;
+    gap: 4px;
+}
+.power-card { width: min(138px, 38vw); padding: 5px 7px 7px; }
+.mini-effects {
+    right: var(--safe-right);
+    bottom: calc(var(--safe-bottom) + 96px);
+}
+
+.screen-panel {
+    width: min(calc(100vw - 20px), 430px);
+    max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);
+    padding: clamp(16px, 5vw, 26px);
+    border-radius: clamp(18px, 5vw, 28px);
+}
+.screen-panel h1, .screen-panel h2 { font-size: clamp(28px, 9vw, 44px); margin-bottom: 8px; }
+.screen-panel p { font-size: clamp(11px, 3vw, 14px); }
+.gesture-picker { gap: 5px; }
+.gesture-option { padding: 8px 5px; font-size: clamp(9px, 2.6vw, 11px); }
+.camera-button, #restartButton { min-height: 44px; padding: 10px 14px; font-size: clamp(12px, 3.3vw, 15px); }
+.reward-list { font-size: clamp(9px, 2.5vw, 11px); }
+
+@media (max-width: 360px), (max-height: 700px) {
+    .game-hud { grid-template-columns: 56px 1fr 56px; }
+    .hud-card, .level-card { min-height: 42px; padding: 4px; }
+    .hud-value { font-size: 20px; }
+    .position-guide-box { height: 55vh; margin-top: 30px; }
+    .power-dock { top: calc(var(--safe-top) + 54px); }
+    .motion-hud { bottom: calc(var(--safe-bottom) + 43px); }
+    .fever-meter { width: 48vw; }
+    .screen-panel { padding: 14px; }
+    .reward-list { display: none; }
+}
+
+/* v12: HUD czytelny z większej odległości */
+@media (max-width: 520px) {
+  .hud-label { font-size: 9px !important; }
+  .hud-value { font-size: clamp(26px, 8.2vw, 34px) !important; }
+  .level-card span:last-child { font-size: 12px !important; }
+  .motion-hud { font-size: 12px !important; font-weight: 900; }
+  .position-guide-box strong { font-size: clamp(12px, 3.6vw, 16px) !important; }
+  .position-guide-box small { font-size: clamp(10px, 3vw, 13px) !important; }
+}
+
+/* =========================================================
+   v13 — MOBILE SQUAT: czysty ekran + wydajność
+   ========================================================= */
+.pose-canvas { display: none !important; }
+
+/* Bez ramki/siatki. Zostaje tylko mały komunikat pomocniczy. */
+.position-guide {
+    inset: auto 10px auto 10px;
+    top: calc(var(--safe-top) + 66px);
+    display: flex;
+    justify-content: center;
+    place-items: initial;
+}
+.position-guide-box {
+    width: auto !important;
+    height: auto !important;
+    max-width: min(88vw, 390px) !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 7px 11px !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 999px !important;
+    background: rgba(4,10,21,.62);
+    box-shadow: 0 7px 20px rgba(0,0,0,.18) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px 7px;
+}
+.position-guide-box span { font-size: 10px !important; }
+.position-guide-box small { display: none; }
+.position-guide-box strong {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    font-size: 10px !important;
+    max-width: none !important;
+}
+.position-guide.calibrating .position-guide-box,
+.position-guide.phase-down .position-guide-box,
+.position-guide.phase-up .position-guide-box,
+.position-guide.position-ok .position-guide-box,
+.position-guide.pose-missing .position-guide-box {
+    box-shadow: 0 7px 20px rgba(0,0,0,.18) !important;
+}
+
+/* Mniej kosztownych filtrów podczas rozgrywki na telefonie. */
+@media (pointer: coarse) {
+    .hud-card, .level-card, .motion-hud, .fever-meter, .power-card,
+    .mini-effects span, .icon-button, .event-banner {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    .game-hud { gap: 5px; }
+    .hud-card, .level-card { background: rgba(5,12,24,.66); }
+    .motion-hud { background: rgba(4,10,21,.72); }
+}
+
+/* Pasek to teraz głębokość aktualnego przysiadu. */
+.motion-hud {
+    max-width: 310px;
+}
+.motion-hud b {
+    transition: width .045s linear;
+    background: linear-gradient(90deg,#67e8ff,#ffd85a,#ff7b3e);
+}
+
+/* Start screen mniej zasłania kamerę po kalibracji. */
+#startScreen.motion-waiting .screen-panel {
+    opacity: .12;
+    transform: scale(.94);
+}
+
+@media (max-width: 430px) {
+    .position-guide { top: calc(var(--safe-top) + 62px); }
+    .position-guide-box { max-width: 92vw !important; }
+    .motion-hud {
+        left: var(--safe-left);
+        right: calc(var(--safe-right) + 48px);
+        bottom: calc(var(--safe-bottom) + 46px);
+        font-size: 11px !important;
+    }
+}
+
+
+/* ===== v17: kamera jako subtelna warstwa + wyższa jakość mobile ===== */
+.camera-feed {
+    object-fit: cover !important;
+    object-position: center center !important;
+    opacity: .34 !important;
+    background: #07101b !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    will-change: transform;
+    pointer-events: none;
+}
+#gameCanvas {
+    background: transparent !important;
+}
+.canvas-wrapper {
+    background: #152b3c !important;
+}
+/* Na telefonie unikamy kosztownych blurów HUD-u. */
+@media (pointer: coarse) {
+    .hud-card, .level-card, .motion-hud, .fever-meter, .power-card, .icon-button, .screen-panel {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    .game-screen {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+}
+/* Po kalibracji instrukcja nie zasłania gry — zostaje tylko mały status. */
+.position-guide.phase-down .position-guide-box,
+.position-guide.phase-up .position-guide-box,
+.position-guide.position-ok .position-guide-box {
+    width: min(84vw, 390px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 8px 12px !important;
+    margin-top: 0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+    background: rgba(5,12,24,.52) !important;
+}
+.position-guide.phase-down,
+.position-guide.phase-up,
+.position-guide.position-ok {
+    align-items: flex-start !important;
+    padding-top: calc(env(safe-area-inset-top) + 74px) !important;
+    pointer-events: none !important;
+}
+
+/* ===== v18: high-res + mobile performance ===== */
+@media (pointer: coarse) {
+    /* Kamera pozostaje subtelna, ale bez filtrów i kosztownego compositingu CSS. */
+    .camera-feed { opacity: .27 !important; filter: none !important; -webkit-filter: none !important; }
+    /* HUD bez cieni/animacji, które na Safari potrafią dokładać koszt każdej klatki. */
+    .hud-card, .level-card, .motion-hud, .fever-meter, .power-card, .icon-button,
+    .event-banner, .mini-effects span {
+        box-shadow: none !important;
+        transition: none !important;
+    }
+    .motion-hud b, .fever-meter b, .power-card i { transition: none !important; }
+}
+/* Kalibracja ma naprawdę zniknąć natychmiast po sukcesie. */
+.position-guide.hidden { display: none !important; }
+
+/* ===== v19 FINAL MOBILE: statyczne tło + szybki tracker ===== */
+.canvas-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(rgba(4,10,20,.10), rgba(4,10,20,.17)), url("assets/background.png") center / cover no-repeat;
+    opacity: .79;
+}
+.camera-feed { z-index: 0 !important; opacity: .36 !important; }
+#gameCanvas { z-index: 2 !important; }
+.game-hud,.power-dock,.event-banner,.fever-meter,.mini-effects,.corner-actions,.game-screen,.motion-hud,.controls-hint,.position-guide { z-index: 5; }
+@media (pointer: coarse) {
+    .canvas-wrapper::before { opacity: .76; }
+    .camera-feed { opacity: .31 !important; }
+    .hud-card,.level-card,.motion-hud,.fever-meter,.power-card,.icon-button,.screen-panel,.event-banner,.mini-effects span {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        filter: none !important;
+    }
+    .score-pop { animation: none !important; }
+}
+
+/* v22 - kalibracja odleglosci */
+.position-guide.distance-ok .position-guide-box,
+.position-guide.position-ok .position-guide-box {
+    border-color: rgba(75,255,145,.98) !important;
+    box-shadow: 0 0 0 9999px rgba(0,35,14,.08), 0 0 34px rgba(75,255,145,.34) !important;
+}
+.position-guide.distance-bad .position-guide-box {
+    border-color: rgba(255,77,77,.98) !important;
+    box-shadow: 0 0 0 9999px rgba(55,0,0,.12), 0 0 34px rgba(255,77,77,.28) !important;
+}
+.position-guide.distance-ok .position-guide-box strong { background: rgba(8,90,48,.72); }
+.position-guide.distance-bad .position-guide-box strong { background: rgba(120,18,18,.74); }
+
+/* v23 - wycentrowany HUD */
+.game-hud {
+    left: 50% !important;
+    right: auto !important;
+    width: min(calc(100% - 24px), 520px) !important;
+    transform: translateX(-50%);
+    grid-template-columns: minmax(62px, 78px) minmax(100px, 1fr) minmax(62px, 78px) !important;
+    justify-content: center !important;
+    gap: 7px !important;
+}
+.game-hud .hud-card, .game-hud .level-card { width: 100%; box-sizing: border-box; }
+
+/* Intuicyjny miernik przysiadu */
+.motion-hud.squat-meter {
+    left: 50% !important;
+    right: auto !important;
+    bottom: max(58px, calc(env(safe-area-inset-bottom) + 50px)) !important;
+    width: min(calc(100% - 28px), 350px) !important;
+    max-width: 350px !important;
+    transform: translateX(-50%);
+    padding: 9px 12px 8px;
+    font-size: 10px;
+    text-align: center;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+.motion-hud.detected { transform: translateX(-50%) scale(1.025) !important; }
+.squat-meter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.squat-meter-head strong {
+    font-size: 11px;
+    letter-spacing: .06em;
+}
+#squatQualityLabel {
+    min-width: 54px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.11);
+    font-weight: 900;
+}
+#squatQualityLabel[data-quality="perfect"] { background: rgba(85,255,154,.22); }
+#squatQualityLabel[data-quality="good"] { background: rgba(255,211,73,.20); }
+.squat-track {
+    position: relative;
+    height: 10px !important;
+    margin: 0 0 6px !important;
+    background: linear-gradient(90deg, rgba(94,255,157,.18), rgba(255,211,74,.20), rgba(255,106,91,.22)) !important;
+}
+.squat-track em {
+    position: absolute;
+    left: 52%;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: rgba(255,255,255,.55);
+    border-radius: 2px;
+}
+.squat-track b {
+    background: linear-gradient(90deg, #68ff9d, #ffd54a, #ff725e) !important;
+    transition: width .035s linear !important;
+}
+.motion-hud > #cameraStatus {
+    display: block;
+    opacity: .76;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+@media (max-width: 390px) {
+    .game-hud { width: calc(100% - 18px) !important; grid-template-columns: 58px minmax(86px, 1fr) 58px !important; gap: 5px !important; }
+    .motion-hud.squat-meter { width: calc(100% - 22px) !important; }
+}
+
+/* v24 - ekran startowy zawsze idealnie wycentrowany */
+#startScreen {
+    display: grid;
+    place-items: center;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+}
+#startScreen.hidden { display: none !important; }
+#startScreen .screen-panel {
+    margin: 0 auto !important;
+    width: min(calc(100vw - 28px), 460px) !important;
+    max-height: calc(100dvh - max(28px, env(safe-area-inset-top)) - max(28px, env(safe-area-inset-bottom)));
+    overflow: auto;
+    transform: none !important;
+    opacity: 1 !important;
+    box-sizing: border-box;
+}
+#startScreen.motion-waiting .screen-panel { transform: none !important; opacity: 1 !important; }
+
+/* v24 - spławik wokół zera */
+.float-meter .legacy-motion-track { display: none !important; }
+.float-scale {
+    position: relative;
+    height: 42px;
+    margin: 2px 0 4px;
+}
+.float-line {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 19px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff765e 0%, #ffd559 25%, #72ffa3 50%, #ffd559 75%, #ff765e 100%);
+    opacity: .75;
+}
+.float-scale::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 9px;
+    width: 2px;
+    height: 23px;
+    background: #fff;
+    border-radius: 2px;
+    opacity: .9;
+    transform: translateX(-50%);
+}
+.float-scale .tick {
+    position: absolute;
+    top: 26px;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: 900;
+    opacity: .74;
+}
+.tneg4 { left: 6%; } .tneg2 { left: 28%; } .tzero { left: 50%; } .tpos2 { left: 72%; } .tpos4 { left: 94%; }
+.squat-float {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 3px rgba(255,255,255,.18), 0 4px 12px rgba(0,0,0,.4);
+    transform: translateX(-50%);
+    transition: left .025s linear !important;
+    overflow: visible !important;
+}
+.squat-float em {
+    position: absolute;
+    left: 50%;
+    bottom: 21px;
+    transform: translateX(-50%);
+    min-width: 31px;
+    padding: 1px 4px;
+    border-radius: 7px;
+    background: rgba(4,10,21,.72);
+    color: #fff;
+    font-size: 8px;
+    font-style: normal;
+}
+.float-caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: -1px 0 5px;
+}
+.float-caption span { font-size: 9px; font-weight: 900; }
+.float-caption small { font-size: 8px; opacity: .65; }
+
+/* środkowanie górnego HUD również względem viewportu */
+.game-hud {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* v25 - mocniejszy punkt neutralny */
+.float-scale .tzero {
+    color: #8dffb5;
+    opacity: 1;
+    font-size: 10px;
+}
+.float-scale::before {
+    box-shadow: 0 0 9px rgba(116,255,165,.7);
+}
+
+/* =========================================================
+   v26 - pionowy spławik, dyskretny przy lewej krawędzi
+   ========================================================= */
+.motion-hud.vertical-float-meter {
+    left: max(7px, env(safe-area-inset-left)) !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    width: 66px !important;
+    height: min(52vh, 360px);
+    max-width: none !important;
+    padding: 8px 6px !important;
+    transform: translateY(-50%) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(4,10,21,.36) !important;
+    border-color: rgba(255,255,255,.12) !important;
+    border-radius: 16px !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+.motion-hud.vertical-float-meter.detected {
+    transform: translateY(-50%) scale(1.025) !important;
+}
+.vertical-float-scale {
+    position: relative;
+    width: 42px;
+    flex: 1 1 auto;
+    min-height: 180px;
+    margin: 0 auto;
+}
+.vertical-float-line {
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
+    left: 20px;
+    width: 3px;
+    border-radius: 999px;
+    background: linear-gradient(180deg,#ff725e 0%,#ffd54a 25%,#6dffa3 50%,#ffd54a 75%,#ff725e 100%);
+    opacity: .78;
+}
+.vertical-float-scale::before {
+    content:"";
+    position:absolute;
+    left: 11px;
+    right: 11px;
+    top:50%;
+    height:2px;
+    background:#fff;
+    box-shadow:0 0 8px rgba(111,255,165,.8);
+    transform:translateY(-50%);
+}
+.vertical-float-scale .vtick {
+    position:absolute;
+    left:0;
+    width:14px;
+    transform:translateY(-50%);
+    font-size:7px;
+    text-align:right;
+    font-weight:900;
+    opacity:.72;
+}
+.vtneg4{top:7%}.vtneg2{top:28.5%}.vtzero{top:50%;color:#82ffad;opacity:1!important;font-size:9px!important}
+.vtpos2{top:71.5%}.vtpos4{top:93%}
+.vertical-squat-float {
+    position:absolute;
+    left:20px !important;
+    top:50%;
+    width:17px !important;
+    height:17px !important;
+    border-radius:50% !important;
+    transform:translate(-50%,-50%) !important;
+    background:#fff !important;
+    box-shadow:0 0 0 3px rgba(255,255,255,.13),0 3px 10px rgba(0,0,0,.45);
+    transition:top .025s linear !important;
+    overflow:visible !important;
+}
+.vertical-squat-float em {
+    position:absolute;
+    left:23px;
+    top:50%;
+    transform:translateY(-50%);
+    padding:1px 4px;
+    border-radius:6px;
+    background:rgba(4,10,21,.72);
+    font-size:7px;
+    font-style:normal;
+    color:#fff;
+}
+.vertical-float-copy {
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    text-align:center;
+    margin-top:4px;
+}
+.vertical-float-copy strong { font-size:7px; line-height:1.05; }
+.vertical-float-copy > span:not(#cameraStatus) { font-size:6.5px; font-weight:900; opacity:.82; }
+.vertical-float-copy small { font-size:7px; font-weight:900; padding:1px 4px; border-radius:999px; background:rgba(255,255,255,.1); }
+.vertical-float-copy #cameraStatus {
+    display:none; /* status nie zasłania gry; komunikaty zostają w logice/console */
+}
+.vertical-float-meter .legacy-motion-track { display:none!important; }
+
+/* Start audio test */
+.start-actions {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:16px;
+}
+.start-actions button { margin-top:0; }
+.audio-test-button {
+    padding:11px 14px;
+    font-size:12px;
+    color:#fff;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:none;
+}
+.audio-test-status {
+    margin:6px 0 2px!important;
+    font-size:11px!important;
+    opacity:.8;
+}
+.audio-test-status.ok { color:#7dffad!important; opacity:1; }
+.audio-test-status.error { color:#ff8b7d!important; opacity:1; }
+
+@media (max-width:390px) {
+    .motion-hud.vertical-float-meter {
+        width:58px!important;
+        height:min(48vh,315px);
+        left:max(5px,env(safe-area-inset-left))!important;
+    }
+    .vertical-float-scale { width:38px; }
+    .vertical-float-line,.vertical-squat-float { left:18px!important; }
+}
+
+/* =========================================================
+   v41 stable UI. Tracker and gameplay stay on v26 core.
+   ========================================================= */
+#startScreen {
+    background:#081321 !important;
+}
+.stable-welcome {
+    width:min(calc(100vw - 28px), 430px) !important;
+    padding:22px 19px 18px !important;
+    border-radius:26px !important;
+    background:#0d1a2b !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    box-shadow:0 24px 68px rgba(0,0,0,.52) !important;
+    text-align:center;
+}
+.stable-welcome h1 {
+    margin:4px 0 8px !important;
+    font-size:clamp(29px,8vw,42px) !important;
+    line-height:1 !important;
+}
+.stable-intro {
+    width:min(330px,100%);
+    margin:0 auto 15px !important;
+    font-size:11px !important;
+    line-height:1.45 !important;
+    color:rgba(255,255,255,.64) !important;
+}
+.stable-steps {
+    display:grid;
+    gap:7px;
+    margin-bottom:15px;
+}
+.stable-steps > div {
+    display:grid;
+    grid-template-columns:30px 1fr;
+    align-items:center;
+    gap:9px;
+    padding:8px 9px;
+    border-radius:13px;
+    background:rgba(255,255,255,.045);
+    text-align:left;
+}
+.stable-steps b {
+    display:grid;
+    place-items:center;
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:rgba(112,255,167,.12);
+    color:#96ffbc;
+    font-size:11px;
+}
+.stable-steps span { display:flex; flex-direction:column; gap:1px; }
+.stable-steps strong { font-size:11px; }
+.stable-steps small { font-size:8.5px; opacity:.54; }
+.stable-cta {
+    display:grid !important;
+    grid-template-columns:30px 1fr;
+    grid-template-rows:auto auto;
+    column-gap:7px;
+    align-items:center;
+    width:min(100%,320px);
+    margin:0 auto !important;
+    padding:11px 15px !important;
+}
+.stable-cta > span { grid-row:1 / 3; font-size:21px; }
+.stable-cta strong { font-size:13px; }
+.stable-cta small { font-size:8px; opacity:.62; }
+.stable-message {
+    margin:7px auto 11px !important;
+    font-size:8.5px !important;
+    opacity:.54;
+}
+.stable-loot {
+    display:flex;
+    justify-content:center;
+    gap:36px;
+    padding-top:11px;
+    border-top:1px solid rgba(255,255,255,.07);
+}
+.stable-loot > div {
+    width:120px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.stable-loot img {
+    width:64px;
+    height:64px;
+    object-fit:contain;
+    filter:drop-shadow(0 6px 11px rgba(0,0,0,.24));
+}
+.stable-loot .pizza-item img {
+    width:53px;
+    height:53px;
+    margin:5.5px 0;
+}
+.stable-loot span { display:flex; flex-direction:column; gap:1px; margin-top:3px; }
+.stable-loot strong { font-size:10px; }
+.stable-loot small { font-size:7.5px; opacity:.5; }
+
+/* Status trackingu jest częścią spławika, a nie osobnym HUD-em. */
+.vertical-float-meter {
+    position:relative;
+}
+.tracking-dot {
+    position:absolute;
+    left:50%;
+    bottom:-7px;
+    width:6px;
+    height:6px;
+    margin-left:-3px;
+    border-radius:50%;
+    background:#9da6b3;
+    box-shadow:0 0 5px rgba(157,166,179,.30);
+    pointer-events:none;
+}
+.tracking-dot.tracking-ok {
+    background:#72ffa3;
+    box-shadow:0 0 6px rgba(114,255,163,.60);
+}
+.tracking-dot.tracking-warn {
+    background:#ffd45f;
+    box-shadow:0 0 6px rgba(255,212,95,.52);
+}
+.tracking-dot.tracking-bad {
+    background:#ff756a;
+    box-shadow:0 0 6px rgba(255,117,106,.55);
+}
+#startScreen:not(.hidden) ~ .vertical-float-meter {
+    display:none !important;
+}
+
+@media(max-height:700px){
+    .stable-welcome{padding:15px 16px 13px !important;}
+    .stable-intro{margin-bottom:10px !important;}
+    .stable-steps{gap:5px;margin-bottom:10px;}
+    .stable-steps > div{padding:5px 7px;}
+    .stable-loot img{width:50px;height:50px;}
+    .stable-loot .pizza-item img{width:42px;height:42px;margin:4px 0;}
+}
+
+/* =========================================================
+   v42 stable tracking UI
+   ========================================================= */
+.motion-hud.vertical-float-meter {
+    left:auto !important;
+    right:max(7px, env(safe-area-inset-right)) !important;
+    top:50% !important;
+    bottom:auto !important;
+    width:42px !important;
+    height:min(38vh, 255px) !important;
+    padding:5px 3px !important;
+    transform:translateY(-50%) !important;
+    border-radius:12px !important;
+    background:rgba(4,10,21,.24) !important;
+    border-color:rgba(255,255,255,.09) !important;
+}
+.motion-hud.vertical-float-meter.detected {
+    transform:translateY(-50%) scale(1.02) !important;
+}
+.vertical-float-scale {
+    width:30px !important;
+    min-height:140px !important;
+}
+.vertical-float-line {
+    left:15px !important;
+    width:2px !important;
+}
+.vertical-squat-float {
+    left:15px !important;
+    width:12px !important;
+    height:12px !important;
+    transition:top .045s linear !important;
+}
+.vertical-squat-float em {
+    display:none !important;
+}
+.vertical-float-scale .vtick {
+    color:transparent !important;
+    width:10px !important;
+}
+.vertical-float-scale .vtick::after {
+    content:"";
+    position:absolute;
+    right:0;
+    top:50%;
+    width:8px;
+    height:1px;
+    background:rgba(255,255,255,.34);
+}
+.vertical-float-scale .vtzero::after {
+    width:12px;
+    height:2px;
+    background:rgba(114,255,163,.78);
+}
+.vertical-float-copy {
+    display:none !important;
+}
+.tracking-dot {
+    left:50% !important;
+    bottom:-6px !important;
+    width:5px !important;
+    height:5px !important;
+    margin-left:-2.5px !important;
+}
+
+.calibration-badge {
+    position:absolute;
+    z-index:18;
+    left:50%;
+    top:max(76px, calc(env(safe-area-inset-top) + 66px));
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 8px;
+    border-radius:999px;
+    background:rgba(8,36,24,.66);
+    border:1px solid rgba(114,255,163,.25);
+    color:#b9ffd0;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.07em;
+    pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+}
+.calibration-badge.hidden {
+    display:none !important;
+}
+.calibration-badge i {
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:#72ffa3;
+    box-shadow:0 0 6px rgba(114,255,163,.62);
+}
+
+/* =========================================================
+   v43: wyraźny pre-start, lewy spławik i stała kalibracja
+   ========================================================= */
+.motion-hud.vertical-float-meter {
+    left:max(7px, env(safe-area-inset-left)) !important;
+    right:auto !important;
+}
+.calibration-badge {
+    top:max(58px, calc(env(safe-area-inset-top) + 48px)) !important;
+    padding:3px 7px !important;
+    font-size:7px !important;
+    background:rgba(8,36,24,.48) !important;
+}
+.calibration-confirm {
+    position:absolute;
+    z-index:24;
+    left:50%;
+    top:54%;
+    transform:translate(-50%,-50%);
+    width:min(calc(100% - 34px), 300px);
+    padding:14px 15px;
+    border-radius:18px;
+    background:rgba(7,17,30,.94);
+    border:1px solid rgba(114,255,163,.24);
+    box-shadow:0 18px 45px rgba(0,0,0,.42);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    text-align:center;
+}
+.calibration-confirm.hidden { display:none !important; }
+.calibration-confirm strong { font-size:14px; }
+.calibration-confirm small {
+    max-width:230px;
+    font-size:9px;
+    line-height:1.35;
+    color:rgba(255,255,255,.62);
+}
+.calibration-confirm button {
+    margin-top:7px;
+    min-width:160px;
+    padding:10px 18px;
+    font-size:12px;
+}
+
+/* =========================================================
+   v44: uporządkowany HUD i gwarantowany spławik
+   ========================================================= */
+
+/* Spławik: zawsze widoczny podczas gry, po lewej, bez tekstów. */
+#motionHud.motion-hud.vertical-float-meter {
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    position:absolute !important;
+    z-index:14 !important;
+    left:max(8px, env(safe-area-inset-left)) !important;
+    right:auto !important;
+    top:50% !important;
+    bottom:auto !important;
+    width:38px !important;
+    height:min(34vh, 230px) !important;
+    min-height:155px !important;
+    max-width:38px !important;
+    padding:5px 2px !important;
+    transform:translateY(-50%) !important;
+    border-radius:11px !important;
+    background:rgba(4,10,21,.42) !important;
+    border:1px solid rgba(255,255,255,.12) !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    overflow:visible !important;
+}
+#motionHud.motion-hud.vertical-float-meter.detected {
+    transform:translateY(-50%) !important;
+}
+#motionHud .vertical-float-scale {
+    display:block !important;
+    visibility:visible !important;
+    position:relative !important;
+    width:28px !important;
+    height:100% !important;
+    min-height:145px !important;
+    flex:1 1 auto !important;
+    margin:0 !important;
+}
+#motionHud .vertical-float-line {
+    display:block !important;
+    position:absolute !important;
+    left:13px !important;
+    top:5% !important;
+    bottom:5% !important;
+    width:2px !important;
+    height:auto !important;
+    opacity:.92 !important;
+}
+#motionHud .vertical-squat-float {
+    display:block !important;
+    visibility:visible !important;
+    position:absolute !important;
+    left:13px !important;
+    width:11px !important;
+    height:11px !important;
+    margin-left:-4.5px !important;
+    border-radius:50% !important;
+    z-index:2 !important;
+}
+#motionHud .vertical-float-scale .vtick {
+    display:block !important;
+    position:absolute !important;
+    right:1px !important;
+    width:7px !important;
+    height:1px !important;
+    color:transparent !important;
+    font-size:0 !important;
+}
+#motionHud .vertical-float-scale .vtick::after {
+    content:"" !important;
+    display:block !important;
+    width:7px !important;
+    height:1px !important;
+    background:rgba(255,255,255,.40) !important;
+}
+#motionHud .vertical-float-scale .vtzero::after {
+    width:10px !important;
+    height:2px !important;
+    background:#72ffa3 !important;
+}
+#motionHud .vertical-float-copy,
+#motionHud .legacy-motion-track {
+    display:none !important;
+}
+#motionHud .tracking-dot {
+    display:block !important;
+    position:absolute !important;
+    left:50% !important;
+    bottom:-7px !important;
+}
+
+/* Status kalibracji: mały, stały, lewy dolny róg. */
+.calibration-badge {
+    position:absolute !important;
+    z-index:15 !important;
+    left:max(8px, env(safe-area-inset-left)) !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(10px, env(safe-area-inset-bottom)) !important;
+    transform:none !important;
+    padding:3px 6px !important;
+    gap:4px !important;
+    border-radius:8px !important;
+    font-size:6px !important;
+    letter-spacing:.045em !important;
+    background:rgba(5,28,18,.52) !important;
+    border:1px solid rgba(114,255,163,.18) !important;
+}
+.calibration-badge i {
+    width:4px !important;
+    height:4px !important;
+}
+
+/* Eventy/pogoda dostają własny pas pod górnym HUD-em. */
+.event-banner {
+    z-index:13 !important;
+    left:50% !important;
+    right:auto !important;
+    top:max(82px, calc(env(safe-area-inset-top) + 72px)) !important;
+    bottom:auto !important;
+    width:min(72vw, 280px) !important;
+    max-width:280px !important;
+    transform:translateX(-50%) !important;
+    padding:6px 10px !important;
+    pointer-events:none !important;
+}
+.event-banner strong { font-size:10px !important; }
+.event-banner span { font-size:7px !important; }
+
+/* Aktywne bonusy po prawej, poza eventem i Fever. */
+.power-dock {
+    z-index:12 !important;
+    left:auto !important;
+    right:max(7px, env(safe-area-inset-right)) !important;
+    top:32% !important;
+    bottom:auto !important;
+    transform:none !important;
+    gap:4px !important;
+}
+.power-card {
+    width:112px !important;
+    padding:4px 6px !important;
+}
+.power-icon {
+    width:22px !important;
+    height:22px !important;
+    flex-basis:22px !important;
+    font-size:13px !important;
+}
+.power-copy strong,.power-copy small { font-size:7px !important; }
+
+.mini-effects {
+    z-index:12 !important;
+    right:max(7px, env(safe-area-inset-right)) !important;
+    left:auto !important;
+    top:auto !important;
+    bottom:max(58px, calc(env(safe-area-inset-bottom) + 50px)) !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-end !important;
+    gap:3px !important;
+}
+.mini-effects span {
+    font-size:7px !important;
+    padding:3px 5px !important;
+}
+
+/* Fever ma wyłącznie środek dolnej krawędzi. */
+.fever-meter {
+    z-index:11 !important;
+    left:50% !important;
+    right:auto !important;
+    bottom:max(8px, env(safe-area-inset-bottom)) !important;
+    width:min(44vw, 190px) !important;
+    transform:translateX(-50%) !important;
+}
+
+/* Start: 3 czytelne przedmioty. */
+.stable-loot-three {
+    display:grid !important;
+    grid-template-columns:repeat(3, minmax(0,1fr)) !important;
+    gap:7px !important;
+    width:100% !important;
+}
+.stable-loot-three > div {
+    width:auto !important;
+    min-width:0 !important;
+}
+.stable-loot-three img {
+    width:48px !important;
+    height:48px !important;
+}
+.stable-loot-three .automat-item img {
+    width:48px !important;
+    height:48px !important;
+}
+.stable-loot-three .pizza-item img {
+    width:43px !important;
+    height:43px !important;
+    margin:2.5px 0 !important;
+}
+.stable-loot-three strong {
+    font-size:9px !important;
+}
+.stable-loot-three small {
+    font-size:6.8px !important;
+    line-height:1.25 !important;
+    max-width:110px !important;
+}
+
+/* Na bardzo małych telefonach jeszcze ciaśniej, ale bez nakładania HUD-u. */
+@media (max-width:390px) {
+    #motionHud.motion-hud.vertical-float-meter {
+        left:5px !important;
+        width:34px !important;
+        max-width:34px !important;
+        height:min(31vh,205px) !important;
+    }
+    .power-card { width:100px !important; }
+    .event-banner { width:min(68vw,250px) !important; }
+    .stable-loot-three { gap:4px !important; }
+    .stable-loot-three img { width:42px !important; height:42px !important; }
+    .stable-loot-three .pizza-item img { width:38px !important; height:38px !important; }
+    .stable-loot-three small { font-size:6.2px !important; }
+}
+
+/* =========================================================
+   v45: spławik od kalibracji, ramka i wyrównany status
+   ========================================================= */
+
+/* Na ekranie powitalnym spławik jest ukryty. Od kliknięcia kamery jest stale widoczny. */
+body:not(.camera-active) #motionHud {
+    display:none !important;
+}
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+}
+
+/* Czytelna, ale subtelna obwódka całego spławika. */
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    border:1px solid rgba(255,255,255,.34) !important;
+    outline:1px solid rgba(0,0,0,.18) !important;
+    outline-offset:-2px !important;
+    background:rgba(4,10,21,.48) !important;
+    box-shadow:0 4px 12px rgba(0,0,0,.18) !important;
+}
+
+/* KALIBRACJA OK ma tę samą oś X co pasek Fever. */
+.calibration-badge {
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(35px, calc(env(safe-area-inset-bottom) + 31px)) !important;
+    transform:translateX(-50%) !important;
+    font-size:6px !important;
+    padding:3px 6px !important;
+    white-space:nowrap !important;
+}
+
+/* Trzy elementy startowe: podobna optyczna wielkość grafik po zamianie assetów. */
+.stable-loot-three .automat-item img {
+    width:43px !important;
+    height:43px !important;
+    margin:2.5px 0 !important;
+}
+.stable-loot-three .pizza-item img {
+    width:48px !important;
+    height:48px !important;
+    margin:0 !important;
+}
+
+/* v46: spławik nigdy nie jest widoczny na ekranie powitalnym */
+#startScreen:not(.hidden) ~ #motionHud,
+body:not(.camera-active) #motionHud {
+    display:none !important;
+}
+
+/* v46: sam wskaźnik bez pudełka */
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    border:0 !important;
+    outline:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    padding:0 !important;
+    width:28px !important;
+    max-width:28px !important;
+    border-radius:0 !important;
+}
+#motionHud .vertical-float-line {
+    background:rgba(255,255,255,.22) !important;
+}
+
+#motionHud .tracking-dot {
+    display:none !important;
+}
+
+/* v46: znaczniki odpowiadają progowi reakcji i pełnej mocy */
+#motionHud .vtzero { top:50% !important; }
+#motionHud .vtneg2 { top:40.5% !important; }
+#motionHud .vtpos2 { top:59.5% !important; }
+#motionHud .vtneg4 { top:8% !important; }
+#motionHud .vtpos4 { top:92% !important; }
+#motionHud .vertical-float-scale .vtneg2::after,
+#motionHud .vertical-float-scale .vtpos2::after {
+    width:10px !important;
+    background:rgba(255,213,90,.62) !important;
+}
+#motionHud .vertical-float-scale .vtneg4::after,
+#motionHud .vertical-float-scale .vtpos4::after {
+    width:12px !important;
+    background:rgba(255,114,94,.64) !important;
+}
+
+/* v46: czytelniejsze aktywne bonusy */
+.power-dock {
+    right:max(8px, env(safe-area-inset-right)) !important;
+    top:30% !important;
+    gap:6px !important;
+}
+.power-card {
+    width:136px !important;
+    min-height:38px !important;
+    padding:6px 8px !important;
+    border-radius:12px !important;
+    background:rgba(5,12,24,.66) !important;
+}
+.power-icon {
+    width:28px !important;
+    height:28px !important;
+    flex-basis:28px !important;
+    font-size:16px !important;
+}
+.power-copy strong {
+    font-size:9px !important;
+    line-height:1.1 !important;
+}
+.power-copy small {
+    font-size:8px !important;
+    line-height:1.1 !important;
+    opacity:.7 !important;
+}
+.power-card i {
+    height:3px !important;
+    margin-top:4px !important;
+}
+
+.mini-effects {
+    right:max(8px, env(safe-area-inset-right)) !important;
+    bottom:max(68px, calc(env(safe-area-inset-bottom) + 60px)) !important;
+    gap:4px !important;
+}
+.mini-effects span {
+    font-size:8px !important;
+    padding:4px 6px !important;
+    border-radius:8px !important;
+    background:rgba(5,12,24,.62) !important;
+}
+
+@media (max-width:390px) {
+    .power-card { width:124px !important; }
+    .power-icon { width:25px !important; height:25px !important; flex-basis:25px !important; font-size:14px !important; }
+    .power-copy strong { font-size:8.5px !important; }
+    .power-copy small { font-size:7.5px !important; }
+}
+
+/* =========================================================
+   v47: spławik = głębokość jednego przysiadu
+   ========================================================= */
+
+/* Skala jest jednokierunkowa: góra = pozycja wyprostowana, dół = głęboki przysiad. */
+#motionHud .vertical-float-scale::before {
+    display:none !important;
+}
+#motionHud .vertical-float-line {
+    top:8% !important;
+    bottom:8% !important;
+    background:linear-gradient(
+        180deg,
+        rgba(114,255,163,.68) 0%,
+        rgba(255,213,90,.55) 38%,
+        rgba(255,170,74,.58) 68%,
+        rgba(255,114,94,.68) 100%
+    ) !important;
+}
+#motionHud .vtneg4 { top:8% !important; }
+#motionHud .vtneg2 { top:25% !important; }
+#motionHud .vtzero { top:49% !important; }
+#motionHud .vtpos2 { top:72% !important; }
+#motionHud .vtpos4 { top:92% !important; }
+
+#motionHud .vertical-float-scale .vtneg4::after {
+    width:13px !important;
+    height:2px !important;
+    background:rgba(114,255,163,.78) !important;
+}
+#motionHud .vertical-float-scale .vtneg2::after {
+    width:8px !important;
+    background:rgba(255,255,255,.34) !important;
+}
+#motionHud .vertical-float-scale .vtzero::after {
+    width:10px !important;
+    height:1px !important;
+    background:rgba(255,213,90,.64) !important;
+}
+#motionHud .vertical-float-scale .vtpos2::after {
+    width:10px !important;
+    background:rgba(255,170,74,.66) !important;
+}
+#motionHud .vertical-float-scale .vtpos4::after {
+    width:13px !important;
+    height:2px !important;
+    background:rgba(255,114,94,.72) !important;
+}
+
+/* Pizza Banditta: krótka nagroda na środku, nie stały element prawego HUD-u. */
+.reward-toast {
+    position:absolute;
+    z-index:19;
+    left:50%;
+    top:36%;
+    transform:translate(-50%, 12px) scale(.94);
+    min-width:150px;
+    max-width:min(74vw, 270px);
+    padding:7px 11px 8px;
+    border-radius:14px;
+    text-align:center;
+    pointer-events:none;
+    opacity:0;
+    background:rgba(7,17,30,.68);
+    border:1px solid rgba(255,180,60,.18);
+    box-shadow:0 8px 24px rgba(0,0,0,.24);
+}
+.reward-toast > span {
+    display:block;
+    margin-bottom:2px;
+    font-size:6px;
+    font-weight:900;
+    letter-spacing:.13em;
+    color:rgba(255,190,75,.74);
+}
+.reward-toast strong {
+    display:block;
+    font-size:13px;
+    line-height:1.1;
+    color:#fff;
+}
+.reward-toast small {
+    display:block;
+    margin-top:3px;
+    font-size:7px;
+    line-height:1.2;
+    color:rgba(255,255,255,.58);
+}
+.reward-toast.show {
+    animation:rewardToastFloat .95s ease-out both;
+}
+@keyframes rewardToastFloat {
+    0%   { opacity:0; transform:translate(-50%,14px) scale(.92); }
+    18%  { opacity:.96; transform:translate(-50%,0) scale(1); }
+    72%  { opacity:.88; transform:translate(-50%,-6px) scale(1); }
+    100% { opacity:0; transform:translate(-50%,-17px) scale(.98); }
+}
+@media (pointer:coarse) {
+    .reward-toast {
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+    }
+}
+
+/* =========================================================
+   v49 SAFE ROLLBACK POLISH
+   Baza: działająca v47. Bez zmian w game.js.
+   ========================================================= */
+
+/* Jeszcze mniejszy spławik, bez ingerencji w jego logikę. */
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    width:22px !important;
+    max-width:22px !important;
+    min-width:22px !important;
+    height:min(27vh, 175px) !important;
+    min-height:132px !important;
+    left:max(5px, env(safe-area-inset-left)) !important;
+    padding:0 !important;
+    background:transparent !important;
+    border:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+}
+#motionHud .vertical-float-scale {
+    width:20px !important;
+    min-height:126px !important;
+}
+#motionHud .vertical-float-line {
+    left:9px !important;
+    width:1px !important;
+}
+#motionHud .vertical-squat-float {
+    left:9px !important;
+    width:8px !important;
+    height:8px !important;
+    margin-left:-3.5px !important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.12),0 1px 4px rgba(0,0,0,.22) !important;
+}
+#motionHud .vertical-float-scale .vtick {
+    right:0 !important;
+    width:5px !important;
+}
+#motionHud .vertical-float-scale .vtick::after {
+    width:5px !important;
+}
+#motionHud .vertical-float-scale .vtneg4::after,
+#motionHud .vertical-float-scale .vtpos4::after {
+    width:8px !important;
+}
+
+/* Aktywne bonusy przenosimy z prawej strony do dolnej strefy.
+   To jest wyłącznie CSS, bez zmian w logice bonusów. */
+.power-dock {
+    position:absolute !important;
+    z-index:12 !important;
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(42px, calc(env(safe-area-inset-bottom) + 36px)) !important;
+    transform:translateX(-50%) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    justify-content:center !important;
+    align-items:flex-end !important;
+    gap:4px !important;
+    width:min(84vw, 370px) !important;
+    pointer-events:none !important;
+}
+.power-card {
+    width:auto !important;
+    min-width:86px !important;
+    max-width:112px !important;
+    min-height:30px !important;
+    padding:4px 6px !important;
+    border-radius:9px !important;
+    background:rgba(5,12,24,.70) !important;
+}
+.power-icon {
+    width:21px !important;
+    height:21px !important;
+    flex-basis:21px !important;
+    font-size:12px !important;
+}
+.power-copy strong { font-size:7.5px !important; }
+.power-copy small { font-size:6.5px !important; }
+.power-card i { height:2px !important; margin-top:3px !important; }
+
+/* Mini efekty też są na dole, nad aktywnymi bonusami. */
+.mini-effects {
+    position:absolute !important;
+    z-index:12 !important;
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(72px, calc(env(safe-area-inset-bottom) + 66px)) !important;
+    transform:translateX(-50%) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    justify-content:center !important;
+    gap:3px !important;
+    width:min(80vw, 330px) !important;
+}
+.mini-effects span {
+    font-size:6.5px !important;
+    padding:3px 5px !important;
+}
+
+/* Pizza Banditta toast również idzie do dolnej strefy, nie na środek. */
+.reward-toast {
+    left:50% !important;
+    top:auto !important;
+    right:auto !important;
+    bottom:max(82px, calc(env(safe-area-inset-bottom) + 76px)) !important;
+    transform:translate(-50%, 8px) scale(.96) !important;
+    min-width:145px !important;
+    max-width:min(68vw, 250px) !important;
+}
+.reward-toast.show {
+    animation:rewardToastSafeBottom .95s ease-out both !important;
+}
+@keyframes rewardToastSafeBottom {
+    0%   { opacity:0; transform:translate(-50%,8px) scale(.94); }
+    18%  { opacity:.96; transform:translate(-50%,0) scale(1); }
+    72%  { opacity:.88; transform:translate(-50%,-3px) scale(1); }
+    100% { opacity:0; transform:translate(-50%,-9px) scale(.98); }
+}
+
+/* Fever pozostaje najniżej na środku. */
+.fever-meter {
+    bottom:max(7px, env(safe-area-inset-bottom)) !important;
+}
+
+/* =========================================================
+   v50 final UI polish
+   ========================================================= */
+
+/* Fever istnieje dopiero po pierwszym przysiadzie, który uruchamia rozgrywkę. */
+body:not(.game-running) .fever-meter {
+    display:none !important;
+}
+body.game-running .fever-meter {
+    display:block !important;
+}
+
+/* Pizza Bandita / bonus: czytelny komunikat u góry, osobna strefa od kalibracji i Fever. */
+.reward-toast {
+    left:50% !important;
+    right:auto !important;
+    top:max(118px, calc(env(safe-area-inset-top) + 108px)) !important;
+    bottom:auto !important;
+    transform:translate(-50%, -7px) scale(.96) !important;
+    min-width:190px !important;
+    max-width:min(78vw, 310px) !important;
+    padding:9px 14px 10px !important;
+    border-radius:15px !important;
+    background:rgba(7,17,30,.80) !important;
+}
+.reward-toast > span {
+    font-size:7px !important;
+}
+.reward-toast strong {
+    font-size:15px !important;
+    line-height:1.12 !important;
+}
+.reward-toast small {
+    font-size:8px !important;
+    line-height:1.25 !important;
+    margin-top:4px !important;
+}
+.reward-toast.show {
+    animation:rewardToastTopV50 1.05s ease-out both !important;
+}
+@keyframes rewardToastTopV50 {
+    0%   { opacity:0; transform:translate(-50%,-10px) scale(.94); }
+    18%  { opacity:.98; transform:translate(-50%,0) scale(1); }
+    74%  { opacity:.92; transform:translate(-50%,4px) scale(1); }
+    100% { opacity:0; transform:translate(-50%,12px) scale(.98); }
+}
+
+/* KALIBRACJA OK zostaje nisko i nie konkuruje z komunikatem bonusu. */
+.calibration-badge {
+    bottom:max(8px, env(safe-area-inset-bottom)) !important;
+    font-size:6px !important;
+}
+
+/* Spławik: gradient oznacza siłę przyszłego skoku.
+   Zielony u góry = mały ruch, żółty = średni, czerwony na dole = mocny skok. */
+#motionHud .vertical-float-line {
+    opacity:1 !important;
+    width:2px !important;
+    background:linear-gradient(
+        180deg,
+        rgba(99,255,160,.92) 0%,
+        rgba(130,255,150,.82) 20%,
+        rgba(255,220,90,.88) 48%,
+        rgba(255,159,72,.90) 72%,
+        rgba(255,91,78,.96) 100%
+    ) !important;
+    box-shadow:
+        0 0 4px rgba(99,255,160,.14),
+        0 0 4px rgba(255,91,78,.10) !important;
+}
+#motionHud .vertical-squat-float {
+    background:#fff !important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.18),0 1px 5px rgba(0,0,0,.28) !important;
+}
+
+/* Znaczniki też subtelnie wzmacniają znaczenie głębokości. */
+#motionHud .vertical-float-scale .vtneg4::after {
+    background:rgba(99,255,160,.86) !important;
+}
+#motionHud .vertical-float-scale .vtzero::after {
+    background:rgba(255,220,90,.78) !important;
+}
+#motionHud .vertical-float-scale .vtpos4::after {
+    background:rgba(255,91,78,.88) !important;
+}
+
+/* =========================================================
+   v51 HUD REDESIGN
+   Priorytet: czytelność z ok. 0,5 m, stałe strefy, brak kolizji.
+   ========================================================= */
+
+/* ---------- 1. GÓRA: wynik / poziom / rekord ---------- */
+.game-hud {
+    position:absolute !important;
+    z-index:20 !important;
+    top:max(8px, env(safe-area-inset-top)) !important;
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%) !important;
+    width:min(calc(100vw - 18px), 430px) !important;
+    display:grid !important;
+    grid-template-columns:88px minmax(120px,1fr) 88px !important;
+    align-items:stretch !important;
+    gap:6px !important;
+    pointer-events:none !important;
+}
+.game-hud .hud-card,
+.game-hud .level-card {
+    min-width:0 !important;
+    min-height:56px !important;
+    padding:6px 7px !important;
+    border-radius:13px !important;
+    background:rgba(5,12,24,.74) !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+.game-hud .hud-card {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:0 !important;
+}
+.game-hud .hud-label {
+    font-size:8px !important;
+    line-height:1 !important;
+    letter-spacing:.07em !important;
+    opacity:.62 !important;
+    text-transform:uppercase !important;
+}
+.game-hud .hud-value {
+    margin-top:2px !important;
+    font-size:30px !important;
+    line-height:.95 !important;
+    font-weight:950 !important;
+    font-variant-numeric:tabular-nums !important;
+}
+.game-hud .level-card {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+}
+.game-hud #difficultyDisplay {
+    font-size:12px !important;
+    line-height:1 !important;
+    font-weight:900 !important;
+}
+.game-hud #comboDisplay {
+    font-size:10px !important;
+    line-height:1 !important;
+    font-weight:850 !important;
+    opacity:.78 !important;
+}
+#boosterStatus {
+    display:none !important;
+}
+
+/* ---------- 2. GÓRNY PAS KOMUNIKATÓW ---------- */
+/* Pogoda / wydarzenia zawsze pod głównym wynikiem. */
+.event-banner {
+    position:absolute !important;
+    z-index:19 !important;
+    left:50% !important;
+    right:auto !important;
+    top:max(76px, calc(env(safe-area-inset-top) + 68px)) !important;
+    bottom:auto !important;
+    width:min(82vw, 340px) !important;
+    max-width:340px !important;
+    transform:translateX(-50%) !important;
+    padding:7px 11px !important;
+    border-radius:12px !important;
+    text-align:center !important;
+    background:rgba(5,12,24,.78) !important;
+    box-shadow:none !important;
+    pointer-events:none !important;
+}
+.event-banner strong {
+    display:block !important;
+    font-size:12px !important;
+    line-height:1.05 !important;
+}
+.event-banner span {
+    display:block !important;
+    margin-top:2px !important;
+    font-size:9px !important;
+    line-height:1.2 !important;
+    opacity:.72 !important;
+}
+
+/* Pizza Bandita / nagroda ma drugi poziom, poniżej wydarzeń. */
+.reward-toast {
+    z-index:18 !important;
+    top:max(126px, calc(env(safe-area-inset-top) + 118px)) !important;
+    min-width:205px !important;
+    max-width:min(80vw, 320px) !important;
+    padding:9px 13px 10px !important;
+}
+.reward-toast > span { font-size:7px !important; }
+.reward-toast strong { font-size:16px !important; }
+.reward-toast small { font-size:9px !important; }
+
+/* ---------- 3. LEWA STRONA: sterowanie ruchem ---------- */
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    z-index:17 !important;
+    left:max(6px, env(safe-area-inset-left)) !important;
+    top:50% !important;
+    width:22px !important;
+    max-width:22px !important;
+    min-width:22px !important;
+    height:min(25vh, 165px) !important;
+    transform:translateY(-50%) !important;
+}
+
+/* ---------- 4. DÓŁ: status / Fever / przyciski ---------- */
+/* Kalibracja jest małym statusem przy lewej dolnej krawędzi. */
+.calibration-badge {
+    z-index:17 !important;
+    left:max(8px, env(safe-area-inset-left)) !important;
+    right:auto !important;
+    bottom:max(10px, env(safe-area-inset-bottom)) !important;
+    transform:none !important;
+    padding:4px 7px !important;
+    font-size:7px !important;
+    border-radius:9px !important;
+    background:rgba(5,28,18,.70) !important;
+}
+.calibration-badge i {
+    width:5px !important;
+    height:5px !important;
+}
+
+/* Fever ma stałe miejsce na środku dołu i jest największym elementem dolnym. */
+.fever-meter {
+    z-index:16 !important;
+    left:50% !important;
+    right:auto !important;
+    bottom:max(8px, env(safe-area-inset-bottom)) !important;
+    transform:translateX(-50%) !important;
+    width:min(46vw, 200px) !important;
+    padding:6px 9px !important;
+    border-radius:10px !important;
+    background:rgba(5,12,24,.72) !important;
+}
+.fever-meter > span {
+    font-size:8px !important;
+    font-weight:900 !important;
+}
+.fever-meter i {
+    height:5px !important;
+    margin-top:4px !important;
+}
+
+/* Sterowanie aplikacją zawsze prawy dolny róg. */
+.corner-actions {
+    z-index:17 !important;
+    right:max(8px, env(safe-area-inset-right)) !important;
+    left:auto !important;
+    bottom:max(8px, env(safe-area-inset-bottom)) !important;
+    gap:5px !important;
+}
+.corner-actions .icon-button {
+    width:37px !important;
+    height:37px !important;
+    border-radius:10px !important;
+    font-size:15px !important;
+    background:rgba(5,12,24,.72) !important;
+}
+
+/* ---------- 5. AKTYWNE BONUSY: jeden czytelny pas ---------- */
+/* Nad dolnymi statusami, poziomo. Środek planszy zostaje wolny. */
+.power-dock {
+    position:absolute !important;
+    z-index:15 !important;
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(54px, calc(env(safe-area-inset-bottom) + 48px)) !important;
+    transform:translateX(-50%) !important;
+    width:min(88vw, 390px) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:5px !important;
+    pointer-events:none !important;
+}
+.power-card {
+    flex:0 1 118px !important;
+    width:118px !important;
+    min-width:0 !important;
+    min-height:40px !important;
+    padding:5px 7px !important;
+    border-radius:10px !important;
+    background:rgba(5,12,24,.78) !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    box-shadow:none !important;
+}
+.power-icon {
+    width:25px !important;
+    height:25px !important;
+    flex-basis:25px !important;
+    font-size:14px !important;
+}
+.power-copy strong {
+    font-size:9px !important;
+    line-height:1.05 !important;
+}
+.power-copy small {
+    font-size:8px !important;
+    line-height:1 !important;
+    opacity:.76 !important;
+}
+.power-card i {
+    height:3px !important;
+    margin-top:4px !important;
+}
+
+/* Małe statusy: jedna linia nad kartami bonusów. */
+.mini-effects {
+    position:absolute !important;
+    z-index:15 !important;
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(100px, calc(env(safe-area-inset-bottom) + 94px)) !important;
+    transform:translateX(-50%) !important;
+    display:flex !important;
+    flex-direction:row !important;
+    justify-content:center !important;
+    gap:4px !important;
+    width:min(84vw, 360px) !important;
+    pointer-events:none !important;
+}
+.mini-effects span {
+    font-size:8px !important;
+    font-weight:850 !important;
+    padding:4px 6px !important;
+    border-radius:8px !important;
+    background:rgba(5,12,24,.76) !important;
+}
+
+/* Niepotrzebna instrukcja podczas rozgrywki znika. */
+.controls-hint {
+    display:none !important;
+}
+
+/* ---------- MAŁE EKRANY ---------- */
+@media (max-width:390px) {
+    .game-hud {
+        width:calc(100vw - 12px) !important;
+        grid-template-columns:76px minmax(105px,1fr) 76px !important;
+        gap:4px !important;
+    }
+    .game-hud .hud-card,
+    .game-hud .level-card {
+        min-height:52px !important;
+        padding:5px !important;
+    }
+    .game-hud .hud-value { font-size:27px !important; }
+    .game-hud #difficultyDisplay { font-size:11px !important; }
+    .game-hud #comboDisplay { font-size:9px !important; }
+
+    .event-banner {
+        top:max(70px, calc(env(safe-area-inset-top) + 62px)) !important;
+        width:min(84vw, 300px) !important;
+    }
+    .event-banner strong { font-size:11px !important; }
+    .event-banner span { font-size:8px !important; }
+
+    .reward-toast {
+        top:max(117px, calc(env(safe-area-inset-top) + 109px)) !important;
+        min-width:180px !important;
+    }
+
+    .power-dock {
+        bottom:max(51px, calc(env(safe-area-inset-bottom) + 45px)) !important;
+        gap:3px !important;
+    }
+    .power-card {
+        flex-basis:104px !important;
+        width:104px !important;
+        min-height:36px !important;
+        padding:4px 5px !important;
+    }
+    .power-icon {
+        width:22px !important;
+        height:22px !important;
+        flex-basis:22px !important;
+        font-size:12px !important;
+    }
+    .power-copy strong { font-size:8px !important; }
+    .power-copy small { font-size:7px !important; }
+
+    .mini-effects {
+        bottom:max(92px, calc(env(safe-area-inset-bottom) + 86px)) !important;
+    }
+    .mini-effects span {
+        font-size:7px !important;
+        padding:3px 5px !important;
+    }
+
+    .fever-meter {
+        width:min(43vw, 170px) !important;
+    }
+    .corner-actions .icon-button {
+        width:34px !important;
+        height:34px !important;
+    }
+}
+
+/* Niskie telefony: ograniczamy pion, nie czytelność tekstu. */
+@media (max-height:700px) {
+    .game-hud .hud-card,
+    .game-hud .level-card { min-height:48px !important; }
+    .game-hud .hud-value { font-size:26px !important; }
+
+    .event-banner {
+        top:max(64px, calc(env(safe-area-inset-top) + 57px)) !important;
+        padding:5px 9px !important;
+    }
+    .reward-toast {
+        top:max(105px, calc(env(safe-area-inset-top) + 98px)) !important;
+    }
+    .mini-effects {
+        bottom:max(88px, calc(env(safe-area-inset-bottom) + 82px)) !important;
+    }
+    .power-dock {
+        bottom:max(48px, calc(env(safe-area-inset-bottom) + 42px)) !important;
+    }
+}
+
+/* =========================================================
+   v52 HUD refinement
+   ========================================================= */
+
+/* Stałe statusy po lewej stronie nad KALIBRACJA OK. */
+.mini-effects {
+    left:max(8px, env(safe-area-inset-left)) !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(42px, calc(env(safe-area-inset-bottom) + 36px)) !important;
+    transform:none !important;
+    width:auto !important;
+    max-width:150px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:4px !important;
+}
+.mini-effects span {
+    font-size:8px !important;
+    padding:4px 6px !important;
+    border-radius:8px !important;
+    background:rgba(5,12,24,.76) !important;
+}
+
+/* Efekty czasowe zostają centralnie nad Fever. */
+.power-dock {
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(54px, calc(env(safe-area-inset-bottom) + 48px)) !important;
+    transform:translateX(-50%) !important;
+    width:min(88vw, 390px) !important;
+    justify-content:center !important;
+    gap:6px !important;
+}
+.power-card {
+    flex:0 1 124px !important;
+    width:124px !important;
+    min-height:42px !important;
+    padding:6px 8px !important;
+}
+.power-icon {
+    width:27px !important;
+    height:27px !important;
+    flex-basis:27px !important;
+    font-size:15px !important;
+}
+.power-copy strong {
+    font-size:9.5px !important;
+}
+.power-copy small {
+    font-size:8.5px !important;
+}
+
+/* Spławik z trzema graficznymi strefami mocy. */
+#motionHud .vertical-float-scale {
+    overflow:visible !important;
+}
+
+/* Delikatne pasy w tle skali pokazują zakresy bez tekstu. */
+#motionHud .vertical-float-scale::after {
+    content:"" !important;
+    position:absolute !important;
+    left:3px !important;
+    right:3px !important;
+    top:8% !important;
+    bottom:8% !important;
+    border-radius:6px !important;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(100,255,160,.09) 0%,
+            rgba(100,255,160,.09) 31%,
+            rgba(255,214,90,.10) 31%,
+            rgba(255,214,90,.10) 64%,
+            rgba(255,101,82,.11) 64%,
+            rgba(255,101,82,.11) 100%
+        ) !important;
+    pointer-events:none !important;
+}
+
+/* Dwie mocniejsze kreski rozdzielają niski / średni / mocny skok. */
+#motionHud .vertical-float-scale .vtzero::after {
+    width:11px !important;
+    height:2px !important;
+    background:rgba(255,214,90,.80) !important;
+}
+#motionHud .vertical-float-scale .vtpos2::after {
+    width:11px !important;
+    height:2px !important;
+    background:rgba(255,145,75,.82) !important;
+}
+
+/* Górna strefa = lekki skok, środek = średni, dół = mocny. */
+#motionHud .vertical-float-line {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(102,255,162,.95) 0%,
+            rgba(102,255,162,.95) 31%,
+            rgba(255,218,92,.95) 31%,
+            rgba(255,218,92,.95) 64%,
+            rgba(255,103,83,.98) 64%,
+            rgba(255,103,83,.98) 100%
+        ) !important;
+}
+
+/* Kropka/punkt pozostaje biały, żeby jednoznacznie pokazywał aktualną głębokość. */
+#motionHud .vertical-squat-float {
+    background:#fff !important;
+}
+
+/* Nieco większa czytelność ogólnego HUD-u, bez przesady. */
+.game-hud .hud-value {
+    font-size:32px !important;
+}
+.game-hud #difficultyDisplay {
+    font-size:12.5px !important;
+}
+.game-hud #comboDisplay {
+    font-size:10.5px !important;
+}
+.event-banner strong {
+    font-size:12.5px !important;
+}
+.event-banner span {
+    font-size:9.5px !important;
+}
+
+/* Małe telefony */
+@media (max-width:390px) {
+    .power-card {
+        flex-basis:110px !important;
+        width:110px !important;
+        min-height:39px !important;
+    }
+    .power-copy strong { font-size:9px !important; }
+    .power-copy small { font-size:8px !important; }
+    .mini-effects {
+        max-width:130px !important;
+    }
+    .mini-effects span {
+        font-size:7.5px !important;
+    }
+    .game-hud .hud-value {
+        font-size:29px !important;
+    }
+}
+
+/* =========================================================
+   v53: ekran powitalny bez HUD-u rozgrywki
+   ========================================================= */
+body:not(.camera-active) .game-hud,
+body:not(.camera-active) .event-banner,
+body:not(.camera-active) .reward-toast,
+body:not(.camera-active) .power-dock,
+body:not(.camera-active) .mini-effects,
+body:not(.camera-active) .corner-actions,
+body:not(.camera-active) .fever-meter,
+body:not(.camera-active) .calibration-badge {
+    display:none !important;
+}
+
+/* v53: brak podwójnego wygładzania. JS odpowiada za minimalne tłumienie. */
+#motionHud .vertical-squat-float {
+    transition:top .018s linear !important;
+}
+
+/* =========================================================
+   v54: dwufazowy ruch, bez dodatkowego obciążenia renderera
+   ========================================================= */
+#motionHud .vertical-squat-float {
+    transition:top .014s linear !important;
+}
+
+/* Po triggerze spławik wraca praktycznie natychmiast do pozycji 0. */
+#motionHud.detected .vertical-squat-float {
+    transition:top .01s linear !important;
+}
+
+/* =========================================================
+   v55: czytelniejsze dolne bonusy
+   ========================================================= */
+.power-card {
+    flex-basis:132px !important;
+    width:132px !important;
+    min-height:46px !important;
+    padding:7px 9px !important;
+    border-radius:11px !important;
+}
+.power-icon {
+    width:30px !important;
+    height:30px !important;
+    flex-basis:30px !important;
+    font-size:17px !important;
+}
+.power-copy strong {
+    font-size:10px !important;
+}
+.power-copy small {
+    font-size:9px !important;
+}
+.power-card i {
+    height:3px !important;
+    margin-top:5px !important;
+}
+
+.mini-effects span {
+    font-size:8.5px !important;
+    padding:4px 7px !important;
+}
+
+@media (max-width:390px) {
+    .power-card {
+        flex-basis:116px !important;
+        width:116px !important;
+        min-height:42px !important;
+        padding:6px 7px !important;
+    }
+    .power-icon {
+        width:26px !important;
+        height:26px !important;
+        flex-basis:26px !important;
+        font-size:15px !important;
+    }
+    .power-copy strong { font-size:9.5px !important; }
+    .power-copy small { font-size:8.5px !important; }
+}
+
+#motionHud .vertical-squat-float {
+    transition:top .035s cubic-bezier(.2,.75,.25,1) !important;
+}
+#motionHud.detected .vertical-squat-float {
+    transition:top .025s cubic-bezier(.2,.75,.25,1) !important;
+}
+
+.motion-cycle-explainer {
+    display:grid;
+    grid-template-columns:1fr 18px 1fr;
+    align-items:center;
+    gap:6px;
+    width:min(100%, 330px);
+    margin:0 auto 13px;
+    padding:8px 10px;
+    border-radius:14px;
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.06);
+}
+.motion-cycle-explainer > div {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+}
+.motion-cycle-explainer > div > span:last-child {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
+.motion-cycle-explainer strong {
+    font-size:10px;
+    line-height:1.05;
+}
+.motion-cycle-explainer small {
+    font-size:8px;
+    color:#9dffbd;
+    font-weight:900;
+}
+.motion-cycle-explainer .motion-arrow {
+    display:grid;
+    place-items:center;
+    width:25px;
+    height:25px;
+    border-radius:50%;
+    background:rgba(114,255,163,.12);
+    color:#9dffbd;
+    font-size:16px;
+    font-weight:900;
+}
+.motion-cycle-explainer > i {
+    width:1px;
+    height:28px;
+    justify-self:center;
+    background:rgba(255,255,255,.10);
+}
+@media (max-height:700px) {
+    .motion-cycle-explainer {
+        margin-bottom:9px;
+        padding:6px 8px;
+    }
+}
+
+/* =========================================================
+   v56: spławik zgodny z DOWN -> reset -> UP -> reset
+   ========================================================= */
+
+/* Środek jest neutralnym punktem zero. Im dalej od środka, tym mocniejszy skok. */
+#motionHud .vertical-float-line {
+    top:7% !important;
+    bottom:7% !important;
+    width:2px !important;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,102,82,.96) 0%,
+            rgba(255,184,76,.90) 25%,
+            rgba(105,255,164,.92) 46%,
+            rgba(105,255,164,.98) 54%,
+            rgba(255,184,76,.90) 75%,
+            rgba(255,102,82,.96) 100%
+        ) !important;
+}
+
+/* Symetryczne strefy: mocny UP u góry, zero w środku, mocny DOWN na dole. */
+#motionHud .vtneg4 { top:8% !important; }
+#motionHud .vtneg2 { top:29% !important; }
+#motionHud .vtzero { top:50% !important; }
+#motionHud .vtpos2 { top:71% !important; }
+#motionHud .vtpos4 { top:92% !important; }
+
+#motionHud .vertical-float-scale .vtneg4::after,
+#motionHud .vertical-float-scale .vtpos4::after {
+    width:9px !important;
+    height:2px !important;
+    background:rgba(255,102,82,.92) !important;
+}
+#motionHud .vertical-float-scale .vtneg2::after,
+#motionHud .vertical-float-scale .vtpos2::after {
+    width:7px !important;
+    height:1px !important;
+    background:rgba(255,184,76,.88) !important;
+}
+#motionHud .vertical-float-scale .vtzero::after {
+    width:12px !important;
+    height:2px !important;
+    background:rgba(105,255,164,.98) !important;
+}
+
+/* Delikatne strefy mocy po obu stronach środka. */
+#motionHud .vertical-float-scale::after {
+    content:"" !important;
+    position:absolute !important;
+    left:4px !important;
+    right:4px !important;
+    top:7% !important;
+    bottom:7% !important;
+    border-radius:5px !important;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,102,82,.08) 0%,
+            rgba(255,102,82,.08) 23%,
+            rgba(255,184,76,.07) 23%,
+            rgba(255,184,76,.07) 43%,
+            rgba(105,255,164,.06) 43%,
+            rgba(105,255,164,.06) 57%,
+            rgba(255,184,76,.07) 57%,
+            rgba(255,184,76,.07) 77%,
+            rgba(255,102,82,.08) 77%,
+            rgba(255,102,82,.08) 100%
+        ) !important;
+    pointer-events:none !important;
+}
+
+#motionHud .vertical-squat-float {
+    background:#fff !important;
+    transition:top .03s cubic-bezier(.2,.75,.25,1) !important;
+}
+
+/* =========================================================
+   v56: efekty czasowe jeden pod drugim
+   ========================================================= */
+.power-dock {
+    left:50% !important;
+    right:auto !important;
+    top:auto !important;
+    bottom:max(54px, calc(env(safe-area-inset-bottom) + 48px)) !important;
+    transform:translateX(-50%) !important;
+    width:auto !important;
+    max-width:170px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    gap:5px !important;
+}
+.power-card {
+    flex:none !important;
+    width:148px !important;
+    min-width:148px !important;
+    max-width:148px !important;
+    min-height:43px !important;
+    padding:6px 8px !important;
+}
+.power-icon {
+    width:28px !important;
+    height:28px !important;
+    flex-basis:28px !important;
+    font-size:16px !important;
+}
+.power-copy strong {
+    font-size:10px !important;
+}
+.power-copy small {
+    font-size:8.5px !important;
+}
+
+@media (max-width:390px) {
+    .power-dock {
+        max-width:155px !important;
+    }
+    .power-card {
+        width:134px !important;
+        min-width:134px !important;
+        max-width:134px !important;
+        min-height:40px !important;
+    }
+    .power-copy strong { font-size:9.5px !important; }
+    .power-copy small { font-size:8px !important; }
+}
+
+/* =========================================================
+   v57: natychmiastowe zero, płynny ruch poza resetem
+   ========================================================= */
+#motionHud .vertical-squat-float.snap-zero {
+    transition:none !important;
+}
+#motionHud .vertical-squat-float {
+    will-change:top;
+}
+
+/* v58 Phase Gate */
+#motionHud .vertical-float-line {
+    top:7% !important; bottom:7% !important;
+    width:1px !important;
+    background:rgba(255,255,255,.16) !important;
+}
+#motionHud .vertical-float-scale::after { display:none !important; }
+#motionHud .vertical-float-scale .vtick::after {
+    background:rgba(255,255,255,.14) !important;
+    height:1px !important;
+}
+#motionHud .vertical-float-scale .vtzero::after {
+    width:12px !important; height:2px !important;
+    background:rgba(105,255,164,.98) !important;
+}
+#motionHud.phase-down .vertical-float-scale .vtpos2::after,
+#motionHud.phase-up .vertical-float-scale .vtneg2::after {
+    width:13px !important; height:3px !important;
+    background:rgba(255,190,74,.98) !important;
+    box-shadow:0 0 5px rgba(255,190,74,.28) !important;
+}
+#motionHud.phase-down .vertical-float-scale .vtpos4::after,
+#motionHud.phase-up .vertical-float-scale .vtneg4::after {
+    width:9px !important; height:2px !important;
+    background:rgba(255,102,82,.88) !important;
+}
+#motionHud .vertical-squat-float {
+    background:#fff !important;
+    transition:top .028s linear !important;
+}
+#motionHud .vertical-squat-float.gate-crossed {
+    box-shadow:0 0 0 2px rgba(255,214,84,.42),0 0 9px rgba(255,214,84,.65) !important;
+}
+#motionHud .vertical-squat-float.snap-zero { transition:none !important; }
+
+/* v60 Peak Capture */
+#motionHud .vertical-squat-float.gate-armed {
+    box-shadow:
+        0 0 0 2px rgba(255,214,84,.45),
+        0 0 10px rgba(255,214,84,.72) !important;
+}
+#motionHud.phase-down .vertical-float-scale .vtpos4::after,
+#motionHud.phase-up .vertical-float-scale .vtneg4::after {
+    box-shadow:0 0 5px rgba(255,102,82,.28) !important;
+}
+#motionHud .vertical-squat-float {
+    transition:top .024s linear !important;
+}
+#motionHud .vertical-squat-float.snap-zero {
+    transition:none !important;
+}
+
+/* =========================================================
+   v61: wiarygodna skala Phase Gate
+   ========================================================= */
+
+/* Nieaktywne kreski są subtelne. */
+#motionHud .vertical-float-scale .vtick::after {
+    background:rgba(255,255,255,.12) !important;
+    box-shadow:none !important;
+}
+
+/* Zero */
+#motionHud .vertical-float-scale .vtzero::after {
+    width:12px !important;
+    height:2px !important;
+    background:rgba(105,255,164,.98) !important;
+}
+
+/* Aktualny próg triggera */
+#motionHud.phase-down .vertical-float-scale .vtpos2::after,
+#motionHud.phase-up .vertical-float-scale .vtneg2::after {
+    width:13px !important;
+    height:3px !important;
+    background:rgba(255,196,76,.98) !important;
+    box-shadow:0 0 5px rgba(255,196,76,.32) !important;
+}
+
+/* Pełna moc */
+#motionHud.phase-down .vertical-float-scale .vtpos4::after,
+#motionHud.phase-up .vertical-float-scale .vtneg4::after {
+    width:10px !important;
+    height:2px !important;
+    background:rgba(255,96,80,.94) !important;
+    box-shadow:0 0 5px rgba(255,96,80,.24) !important;
+}
+
+/* Latch/reset jest natychmiastowy wizualnie. */
+#motionHud .vertical-squat-float.snap-zero {
+    transition:none !important;
+}
+
+/* =========================================================
+   v63 FINAL SQUAT METER
+   Jedna oś: głębokość przysiadu.
+   ========================================================= */
+
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    width:24px !important;
+    max-width:24px !important;
+    min-width:24px !important;
+    height:min(28vh, 180px) !important;
+}
+
+/* Cienki neutralny tor */
+#motionHud .vertical-float-line {
+    left:10px !important;
+    top:8% !important;
+    bottom:8% !important;
+    width:3px !important;
+    border-radius:3px !important;
+    background:rgba(255,255,255,.12) !important;
+}
+
+/* Wypełnienie pokazuje faktyczną głębokość. */
+#motionHud .squat-meter-fill {
+    display:block !important;
+    position:absolute !important;
+    left:10px !important;
+    width:3px !important;
+    height:0;
+    border-radius:3px !important;
+    background:linear-gradient(
+        180deg,
+        rgba(105,255,164,.96) 0%,
+        rgba(255,207,78,.98) 42%,
+        rgba(255,143,70,.98) 72%,
+        rgba(255,94,78,.98) 100%
+    ) !important;
+    pointer-events:none !important;
+}
+
+/* Punkt pokazuje koniec aktualnie zmierzonej głębokości. */
+#motionHud .vertical-squat-float {
+    left:10px !important;
+    width:9px !important;
+    height:9px !important;
+    margin-left:-3px !important;
+    background:#fff !important;
+    transition:top .026s linear !important;
+    z-index:3 !important;
+}
+
+/* Skala ma tylko trzy znaczące miejsca.
+   Zielona góra = gotowy.
+   Żółta = próg skoku.
+   Czerwona = pełna moc. */
+#motionHud .vertical-float-scale .vtick::after {
+    width:5px !important;
+    height:1px !important;
+    background:rgba(255,255,255,.10) !important;
+    box-shadow:none !important;
+}
+#motionHud .vertical-float-scale .vtneg4::after {
+    width:9px !important;
+    height:2px !important;
+    background:rgba(105,255,164,.92) !important;
+}
+#motionHud .vertical-float-scale .vtpos2::after {
+    width:12px !important;
+    height:3px !important;
+    background:rgba(255,207,78,.98) !important;
+    box-shadow:0 0 5px rgba(255,207,78,.24) !important;
+}
+#motionHud .vertical-float-scale .vtpos4::after {
+    width:10px !important;
+    height:2px !important;
+    background:rgba(255,94,78,.94) !important;
+}
+#motionHud .vertical-float-scale .vtneg2::after,
+#motionHud .vertical-float-scale .vtzero::after {
+    opacity:.22 !important;
+}
+
+/* Po triggerze punkt może błysnąć, ale nie resetuje się.
+   Podczas wstawania naturalnie wraca ku górze. */
+#motionHud.meter-triggered .vertical-squat-float {
+    box-shadow:
+        0 0 0 2px rgba(255,207,78,.38),
+        0 0 9px rgba(255,207,78,.50) !important;
+}
+#motionHud.meter-returning .vertical-squat-float {
+    box-shadow:0 0 0 1px rgba(105,255,164,.24) !important;
+}
+#motionHud .vertical-squat-float.snap-zero {
+    transition:none !important;
+}
+
+/* Stare Phase Gate wyróżnienia wyłączone. */
+#motionHud.phase-down .vertical-float-scale .vtpos2::after,
+#motionHud.phase-up .vertical-float-scale .vtneg2::after,
+#motionHud.phase-down .vertical-float-scale .vtpos4::after,
+#motionHud.phase-up .vertical-float-scale .vtneg4::after {
+    box-shadow:none !important;
+}
+
+/* =========================================================
+   v64: prosty pionowy fill meter
+   ========================================================= */
+
+/* Ukrywamy wszystkie kreski i stare znaczniki. */
+#motionHud .vertical-float-scale .vtick,
+#motionHud .vertical-float-line,
+#motionHud .vertical-squat-float {
+    display:none !important;
+}
+
+/* Cała skala staje się jednym wąskim polem. */
+#motionHud .vertical-float-scale {
+    position:relative !important;
+    width:14px !important;
+    min-height:130px !important;
+    border-radius:8px !important;
+    background:rgba(255,255,255,.08) !important;
+    overflow:hidden !important;
+}
+
+/* Wypełnienie idzie od góry do dołu wraz z głębokością. */
+#motionHud .squat-meter-fill {
+    display:block !important;
+    position:absolute !important;
+    left:0 !important;
+    top:0 !important;
+    width:100% !important;
+    height:0;
+    border-radius:8px !important;
+    background:linear-gradient(
+        180deg,
+        rgba(105,255,164,.96) 0%,
+        rgba(255,205,82,.98) 55%,
+        rgba(255,96,78,.98) 100%
+    ) !important;
+    transition:height .028s linear !important;
+}
+
+/* Mniejszy footprint całego wskaźnika. */
+body.camera-active #motionHud.motion-hud.vertical-float-meter {
+    width:18px !important;
+    max-width:18px !important;
+    min-width:18px !important;
+    height:min(27vh, 176px) !important;
+}
+
+/* Stary punkt i tekst pozostają ukryte. */
+#motionHud .vertical-float-copy,
+#motionHud .legacy-motion-track,
+#motionHud .tracking-dot {
+    display:none !important;
+}
+
+/* v65: pasek ma prawdziwe zero po starcie */
+#motionHud .squat-meter-fill {
+    min-height:0 !important;
+    height:0%;
+    transform:none !important;
+}
+
+/* v66: adaptacyjna skala paska */
+#motionHud .squat-meter-fill {
+    transition:height .035s cubic-bezier(.2,.75,.25,1) !important;
+}
+
+/* =========================================================
+   v67: meter 1:1 z triggerem
+   0–60% = dojście do skoku
+   60–100% = siła skoku
+   ========================================================= */
+#motionHud .squat-meter-fill {
+    background:linear-gradient(
+        180deg,
+        rgba(105,255,164,.96) 0%,
+        rgba(120,255,158,.96) 58%,
+        rgba(255,205,82,.98) 60%,
+        rgba(255,154,72,.98) 78%,
+        rgba(255,96,78,.98) 100%
+    ) !important;
+    transition:height .032s cubic-bezier(.2,.75,.25,1) !important;
+}
+
+/* Subtelna zmiana obramowania pola po przekroczeniu realnego progu. */
+#motionHud .vertical-float-scale {
+    border:1px solid rgba(255,255,255,.08) !important;
+}
+#motionHud.meter-triggered .vertical-float-scale {
+    border-color:rgba(255,205,82,.40) !important;
+}
+
+/* =========================================================
+   v68: trzy subtelne progi mocy na prostym fill meterze
+   ========================================================= */
+#motionHud .meter-power-mark {
+    display:block !important;
+    position:absolute !important;
+    z-index:4 !important;
+    left:-3px !important;
+    width:20px !important;
+    height:1px !important;
+    pointer-events:none !important;
+    border-radius:2px !important;
+}
+#motionHud .meter-power-low {
+    top:60% !important;
+    background:rgba(255,215,92,.72) !important;
+}
+#motionHud .meter-power-mid {
+    top:79% !important;
+    height:2px !important;
+    background:rgba(255,157,72,.82) !important;
+}
+#motionHud .meter-power-high {
+    top:94% !important;
+    height:2px !important;
+    background:rgba(255,94,78,.94) !important;
+}
+
+/* v69: finalna instrukcja sterowania */
+.squat-rule-explainer strong {
+    font-size:10.5px !important;
+}
+.squat-rule-explainer small {
+    font-size:8px !important;
+    line-height:1.2 !important;
+}
+
+/* =========================================================
+   v70: natychmiastowy reset metera po skoku
+   ========================================================= */
+#motionHud.meter-returning .vertical-float-scale {
+    opacity:.42 !important;
+    transition:opacity .08s linear !important;
+}
+#motionHud:not(.meter-returning) .vertical-float-scale {
+    opacity:1 !important;
+    transition:opacity .08s linear !important;
+}
+#motionHud.meter-returning .squat-meter-fill {
+    height:0% !important;
+}
+
+/* Po ponownym uzbrojeniu meter wraca od razu do pełnej czytelności. */
+#motionHud .squat-meter-fill {
+    will-change:height;
+}
+
+/* =========================================================
+   v76: prosty meter oparty o ten sam sygnał co licznik repów
+   ========================================================= */
+#motionHud .squat-meter-fill {
+    transition:height .055s linear !important;
+}
+#motionHud.meter-triggered .vertical-float-scale {
+    border-color:rgba(255,205,82,.44) !important;
+}
+
+/* v77 CLEAN MOTION METER */
+#motionHud .meter-power-mark {
+    display:block !important;
+    position:absolute !important;
+    z-index:4 !important;
+    left:-3px !important;
+    width:20px !important;
+    height:1px !important;
+    pointer-events:none !important;
+}
+#motionHud .meter-power-low { top:60% !important; background:rgba(255,215,92,.78) !important; }
+#motionHud .meter-power-mid { top:78% !important; height:2px !important; background:rgba(255,157,72,.84) !important; }
+#motionHud .meter-power-high { top:94% !important; height:2px !important; background:rgba(255,94,78,.94) !important; }
+#motionHud .squat-meter-fill { transition:height .045s linear !important; }
+
+/* =========================================================
+   v78 PERFORMANCE
+   ========================================================= */
+body.game-running .camera-layer,
+body.game-running .camera-feed,
+body.game-running #cameraFeed {
+    filter:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+
+body.game-running #motionHud .squat-meter-fill {
+    transition:height .04s linear !important;
+    will-change:height;
+}
+
+body.game-running #motionHud {
+    contain:layout paint style;
+}
+
+body.game-running .weather-overlay,
+body.game-running .weather-effect {
+    filter:none !important;
+}
+
+/* =========================================================
+   v79 60 FPS MOBILE RENDERER
+   ========================================================= */
+
+@media (pointer: coarse) {
+    /* Główna gra ma mniejszy koszt compositingu. */
+    #gameCanvas {
+        image-rendering:auto;
+        filter:none !important;
+        will-change:auto !important;
+    }
+
+    body.game-running #gameCanvas {
+        transform:translateZ(0);
+    }
+
+    /* Kamera jest osobną warstwą compositora bez filtrów. */
+    body.game-running #cameraFeed {
+        filter:none !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        will-change:auto !important;
+    }
+
+    /* Box-shadowy HUD-u potrafią być drogie na mobilnym Safari/Chrome. */
+    body.game-running .hud-card,
+    body.game-running .power-card,
+    body.game-running #motionHud {
+        box-shadow:none !important;
+        text-shadow:none !important;
+    }
+}
+
+/* v80 PERFORMANCE PROBE */
+#performanceProbe {
+    position:fixed;
+    left:8px;
+    top:8px;
+    z-index:9999;
+    border:1px solid rgba(255,255,255,.24);
+    border-radius:999px;
+    padding:5px 8px;
+    background:rgba(4,10,20,.68);
+    color:#fff;
+    font:700 10px/1 system-ui,sans-serif;
+    letter-spacing:.01em;
+    pointer-events:auto;
+    opacity:.78;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+}
+#performanceProbe.smooth {
+    outline:1px solid rgba(100,255,180,.5);
+}
+body:not(.game-running) #performanceProbe {
+    opacity:.52;
+}
+
+/* =========================================================
+   v81 SMOOTH PRESENTATION
+   ========================================================= */
+
+#cameraSnapshot {
+    display:none;
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    object-fit:cover;
+    z-index:0;
+    opacity:.22;
+    pointer-events:none;
+    transform:scaleX(-1);
+}
+
+body.snapshot-background #cameraSnapshot {
+    display:block;
+}
+
+/* Video działa nadal dla MediaPipe, ale nie jest pełnoekranową warstwą compositora. */
+body.snapshot-background #cameraFeed {
+    position:fixed !important;
+    left:-20px !important;
+    top:-20px !important;
+    width:4px !important;
+    height:4px !important;
+    opacity:.001 !important;
+    visibility:visible !important;
+    pointer-events:none !important;
+    filter:none !important;
+    transform:none !important;
+}
+
+body.snapshot-background #gameCanvas {
+    position:relative;
+    z-index:1;
+}
+
+#motionHud .squat-meter-fill {
+    transition:none !important;
+    will-change:height;
+}
+
+/* =========================================================
+   v82 FINAL CLEAN BACKGROUND
+   ========================================================= */
+
+/* Podczas gry kamera nadal dostarcza klatki do MediaPipe,
+   ale gracz nie jest renderowany w tle. */
+body.camera-tracking-hidden #cameraFeed {
+    position:fixed !important;
+    left:-12px !important;
+    top:-12px !important;
+    width:2px !important;
+    height:2px !important;
+    opacity:.001 !important;
+    visibility:visible !important;
+    pointer-events:none !important;
+    filter:none !important;
+    transform:none !important;
+}
+
+/* Snapshot z v81 nie jest używany. */
+#cameraSnapshot {
+    display:none !important;
+}
+
+/* Stabilne tło gry – bez animowanego video i bez dodatkowego compositingu. */
+body.game-running {
+    background:
+        radial-gradient(circle at 50% 18%, rgba(78,135,190,.22), transparent 42%),
+        linear-gradient(180deg, #12283d 0%, #17354c 44%, #102637 100%);
+    background-attachment:fixed;
+}
+
+/* Usuń licznik diagnostyczny nawet przy cache starego DOM/CSS. */
+#performanceProbe {
+    display:none !important;
+}
+
+/* Szybsza odpowiedź wizualna faz ruchu. */
+#motionHud .squat-meter-fill {
+    transition:none !important;
+}
+
+/* =========================================================
+   v89 DISPLAY-FIRST PERFORMANCE
+   ========================================================= */
+
+/* Podczas samej rozgrywki Canvas ma być jedyną intensywnie animowaną warstwą.
+   HUD nie powinien uruchamiać kosztownych filtrów/repaintów całego viewportu. */
+body.game-running #gameCanvas {
+    will-change:auto !important;
+    filter:none !important;
+    backdrop-filter:none !important;
+}
+
+/* Rozmycia są bardzo drogie na mobilnym compositorze. */
+body.game-running .game-hud,
+body.game-running .hud,
+body.game-running .hud-card,
+body.game-running .status-card,
+body.game-running .bonus-card,
+body.game-running .effect-card,
+body.game-running .calibration-badge,
+body.game-running .motion-guide,
+body.game-running .squat-meter {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+
+/* Animujemy tylko to, co faktycznie musi się zmieniać. */
+body.game-running * {
+    animation-timing-function:linear;
+}
+
+/* Kamera pozostaje źródłem danych, ale nie uczestniczy wizualnie w kompozycji gry. */
+body.game-running #cameraFeed {
+    position:fixed !important;
+    left:-8px !important;
+    top:-8px !important;
+    width:2px !important;
+    height:2px !important;
+    opacity:.001 !important;
+    pointer-events:none !important;
+    filter:none !important;
+    transform:none !important;
+}
+
+/* v94 RENDER ARCHITECTURE TEST */
+
+
+
+/* v101 safety + polish */
+.tracking-alert {
+    position:absolute;
+    z-index:40;
+    left:50%;
+    top:max(82px, calc(env(safe-area-inset-top) + 70px));
+    transform:translateX(-50%);
+    width:min(calc(100% - 34px), 360px);
+    padding:8px 12px;
+    border-radius:12px;
+    text-align:center;
+    color:#fff;
+    font:900 11px/1.25 system-ui,sans-serif;
+    letter-spacing:.02em;
+    background:rgba(110,68,10,.88);
+    border:1px solid rgba(255,210,100,.45);
+    pointer-events:none;
+}
+.tracking-alert.bad {
+    background:rgba(126,24,30,.90);
+    border-color:rgba(255,115,125,.55);
+}
+.tracking-alert.hidden { display:none !important; }
+
+.calibration-badge {
+    top:auto !important;
+    bottom:max(42px, calc(env(safe-area-inset-bottom) + 38px)) !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    padding:3px 7px !important;
+    font-size:7px !important;
+    opacity:.88;
+}
+.position-guide { z-index:28 !important; }
+body.game-running .position-guide.pose-missing .position-guide-box {
+    width:min(78%, 330px);
+    height:auto;
+    min-height:120px;
+    padding:18px 14px;
+    justify-content:center;
+    background:rgba(7,14,25,.88);
+    border-style:solid;
+    border-color:rgba(255,105,115,.72);
+}
+
+/* v102 production mobile shell */
+html, body {
+    min-height:100%;
+    min-height:100dvh;
+    overscroll-behavior:none;
+}
+body {
+    min-height:100dvh;
+}
+.game-shell,
+.app,
+#app {
+    min-height:100dvh;
+}
+
+/* Kalibracja nigdy nie przebija przez ekran startowy. */
+body:not(.camera-mode):not(.game-running) .position-guide,
+body:not(.camera-mode):not(.game-running) .calibration-badge,
+body:not(.camera-mode):not(.game-running) .tracking-alert,
+body:not(.camera-mode):not(.game-running) .motion-hud {
+    display:none !important;
+}
+
+.device-gate {
+    position:fixed;
+    inset:0;
+    z-index:999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+        radial-gradient(circle at 50% 25%, rgba(38,85,120,.34), transparent 42%),
+        #07101c;
+    color:#fff;
+}
+.device-gate.hidden { display:none !important; }
+.device-gate-card {
+    width:min(100%, 390px);
+    padding:30px 24px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:22px;
+    background:rgba(12,24,39,.92);
+    text-align:center;
+    box-shadow:0 18px 70px rgba(0,0,0,.36);
+}
+.device-gate-icon {
+    font-size:46px;
+    line-height:1;
+    margin-bottom:16px;
+}
+.device-gate-card h1 {
+    margin:0 0 10px;
+    font:900 22px/1.08 system-ui,sans-serif;
+    letter-spacing:.02em;
+}
+.device-gate-card p {
+    margin:0;
+    color:rgba(255,255,255,.74);
+    font:600 14px/1.45 system-ui,sans-serif;
+}
+body.unsupported-device > *:not(#deviceGate) {
+    visibility:hidden !important;
+}
+body.unsupported-device #deviceGate {
+    visibility:visible !important;
+}
+
+.squat-rule-explainer small:empty { display:none !important; }
+
+/* v103 final start-screen control icons */
+.squat-rule-explainer .motion-arrow {
+    display:inline-grid !important;
+    place-items:center;
+    flex:0 0 34px;
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:22px;
+    font-weight:900;
+    line-height:1;
+    color:#fff;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);
+}
+.squat-rule-explainer small:empty {
+    display:none !important;
+}
+
+body.camera-mode:not(.game-running) .position-guide:not(.hidden) {
+    display:grid !important;
+}
+body.camera-mode:not(.game-running) .calibration-confirm:not(.hidden) {
+    display:flex !important;
+}
+body.camera-mode:not(.game-running) .calibration-badge:not(.hidden) {
+    display:flex !important;
+}
+
+/* =========================================================
+   v104 FEVER FIX
+   ========================================================= */
+body.game-running .fever-meter {
+    display:flex !important;
+}
+.fever-meter {
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+.fever-meter i {
+    position:relative;
+    overflow:hidden;
+}
+#feverFill {
+    position:absolute;
+    inset:0;
+    width:100% !important;
+    height:100%;
+    transform:scaleX(0);
+    transform-origin:left center;
+    transition:transform .14s linear !important;
+    will-change:transform;
+    box-shadow:none !important;
+}
+
+/* =========================================================
+   v105 FEVER - ROBUST DIRECT WIDTH
+   ========================================================= */
+#feverFill {
+    position:static !important;
+    display:block !important;
+    width:0%;
+    height:100% !important;
+    transform:none !important;
+    transform-origin:initial !important;
+    transition:width .12s linear !important;
+    will-change:auto !important;
+    background:linear-gradient(90deg,#ffb000,#ff5530,#ff2bd6) !important;
+}
+.fever-meter > span {
+    min-width:78px;
+    text-align:center;
+    white-space:nowrap;
+}
+
+/* =========================================================
+   v105 HUD MESSAGE LANES
+   ========================================================= */
+
+/* 1. Tracking / bezpieczeństwo tuż pod głównym HUD-em */
+.tracking-alert {
+    top:max(72px, calc(env(safe-area-inset-top) + 62px)) !important;
+    max-width:min(86vw, 360px) !important;
+}
+
+/* 2. Pogoda / wydarzenie niżej */
+.event-banner {
+    top:max(122px, calc(env(safe-area-inset-top) + 112px)) !important;
+}
+
+/* 3. Krótkie bonusy jeszcze niżej - nigdy na statusie trackingu */
+.reward-toast {
+    top:max(172px, calc(env(safe-area-inset-top) + 162px)) !important;
+    bottom:auto !important;
+    z-index:22 !important;
+    max-width:min(78vw, 310px) !important;
+}
+
+@media (max-height:700px) {
+    .tracking-alert {
+        top:max(64px, calc(env(safe-area-inset-top) + 54px)) !important;
+    }
+    .event-banner {
+        top:max(108px, calc(env(safe-area-inset-top) + 98px)) !important;
+    }
+    .reward-toast {
+        top:max(150px, calc(env(safe-area-inset-top) + 140px)) !important;
+    }
+}
+
+/* =========================================================
+   v106 FINAL FEVER + HUD LAYOUT
+   ========================================================= */
+
+/* FEVER: stały track, absolutny fill — flex nie może ścisnąć paska do 0. */
+.fever-meter i {
+    position:relative !important;
+    display:block !important;
+    flex:1 1 auto !important;
+    min-width:110px !important;
+    height:7px !important;
+    overflow:hidden !important;
+    border-radius:99px !important;
+}
+#feverFill {
+    position:absolute !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    right:auto !important;
+    display:block !important;
+    width:0%;
+    min-width:0 !important;
+    max-width:100% !important;
+    height:100% !important;
+    transform:none !important;
+    border-radius:99px !important;
+    transition:width .14s linear !important;
+}
+.fever-meter > span {
+    min-width:auto !important;
+}
+
+/* DÓŁ: bonusy minimalnie wyżej od Fever. */
+.mini-effects {
+    bottom:max(92px, calc(env(safe-area-inset-bottom) + 78px)) !important;
+}
+.reward-toast {
+    top:auto !important;
+    bottom:max(116px, calc(env(safe-area-inset-bottom) + 102px)) !important;
+    z-index:22 !important;
+}
+
+/* GÓRA:
+   1. punkty / główny HUD,
+   2. pogoda tuż pod nim,
+   3. tracking pod pogodą.
+*/
+.event-banner {
+    top:max(68px, calc(env(safe-area-inset-top) + 58px)) !important;
+    z-index:24 !important;
+}
+.tracking-alert {
+    top:max(112px, calc(env(safe-area-inset-top) + 102px)) !important;
+    z-index:23 !important;
+}
+
+@media (max-height:700px) {
+    .mini-effects {
+        bottom:max(82px, calc(env(safe-area-inset-bottom) + 68px)) !important;
+    }
+    .reward-toast {
+        bottom:max(102px, calc(env(safe-area-inset-bottom) + 88px)) !important;
+    }
+    .event-banner {
+        top:max(62px, calc(env(safe-area-inset-top) + 52px)) !important;
+    }
+    .tracking-alert {
+        top:max(104px, calc(env(safe-area-inset-top) + 94px)) !important;
+    }
+}
+
+/* =========================================================
+   v107 FINAL HUD ORDER + FEVER
+   ========================================================= */
+
+/* FEVER: legacy width rules cannot affect visual progress anymore. */
+.fever-meter i {
+    position:relative !important;
+    display:block !important;
+    flex:1 1 auto !important;
+    min-width:110px !important;
+    height:7px !important;
+    overflow:hidden !important;
+}
+#feverFill {
+    --fever-scale:0;
+    position:absolute !important;
+    inset:0 !important;
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    transform-origin:left center !important;
+    transform:scaleX(var(--fever-scale)) !important;
+    transition:transform .14s linear !important;
+    will-change:transform;
+    box-shadow:none !important;
+}
+.fever-meter > span {
+    white-space:nowrap !important;
+}
+
+/* ===== DÓŁ =====
+   1. Fever najniżej
+   2. status kalibracji/tracking powyżej
+   3. bonusy jeszcze wyżej
+*/
+.fever-meter {
+    bottom:max(12px, env(safe-area-inset-bottom)) !important;
+}
+.calibration-badge {
+    top:auto !important;
+    bottom:max(54px, calc(env(safe-area-inset-bottom) + 44px)) !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    z-index:20 !important;
+}
+.mini-effects {
+    bottom:max(94px, calc(env(safe-area-inset-bottom) + 84px)) !important;
+}
+.reward-toast {
+    top:auto !important;
+    bottom:max(124px, calc(env(safe-area-inset-bottom) + 114px)) !important;
+    z-index:22 !important;
+}
+
+/* ===== GÓRA =====
+   1. Wynik / rekord / poziom
+   2. Pogoda
+   3. Problemy z trackingiem
+*/
+.event-banner {
+    top:max(72px, calc(env(safe-area-inset-top) + 62px)) !important;
+    z-index:31 !important;
+}
+.tracking-alert {
+    top:max(124px, calc(env(safe-area-inset-top) + 114px)) !important;
+    bottom:auto !important;
+    z-index:30 !important;
+}
+
+/* Jeśli oba komunikaty są aktywne, tracking ma swoją niższą linię. */
+body.game-running .tracking-alert:not(.hidden) {
+    top:max(124px, calc(env(safe-area-inset-top) + 114px)) !important;
+}
+
+/* Niskie telefony: zachowujemy kolejność, tylko z mniejszymi odstępami. */
+@media (max-height:700px) {
+    .fever-meter {
+        bottom:max(8px, env(safe-area-inset-bottom)) !important;
+    }
+    .calibration-badge {
+        bottom:max(48px, calc(env(safe-area-inset-bottom) + 38px)) !important;
+    }
+    .mini-effects {
+        bottom:max(84px, calc(env(safe-area-inset-bottom) + 74px)) !important;
+    }
+    .reward-toast {
+        bottom:max(110px, calc(env(safe-area-inset-bottom) + 100px)) !important;
+    }
+    .event-banner {
+        top:max(66px, calc(env(safe-area-inset-top) + 56px)) !important;
+    }
+    .tracking-alert,
+    body.game-running .tracking-alert:not(.hidden) {
+        top:max(112px, calc(env(safe-area-inset-top) + 102px)) !important;
+    }
+}
+
+.calibration-badge { display:none !important; }
+
+/* v108 final jump thresholds: lekki 40–70, średni 70–90, mocny 90–100 */
+.squat-meter .threshold-low,
+.motion-meter .threshold-low { left:40% !important; }
+.squat-meter .threshold-mid,
+.motion-meter .threshold-mid { left:70% !important; }
+.squat-meter .threshold-high,
+.motion-meter .threshold-high { left:90% !important; }
+
+/* =========================================================
+   v109 FINAL SQUAT METER THRESHOLDS
+   Mechanika: lekki 40–70, średni 70–90, mocny 90–100.
+   ========================================================= */
+
+#motionHud .meter-power-mark {
+    display:block !important;
+    position:absolute !important;
+    left:-3px !important;
+    width:20px !important;
+    pointer-events:none !important;
+    z-index:5 !important;
+}
+
+#motionHud .meter-power-low {
+    top:40% !important;
+    height:1px !important;
+    background:rgba(255,214,86,.82) !important;
+}
+
+#motionHud .meter-power-mid {
+    top:70% !important;
+    height:2px !important;
+    background:rgba(255,151,67,.92) !important;
+}
+
+#motionHud .meter-power-high {
+    top:90% !important;
+    height:2px !important;
+    background:rgba(255,91,73,.98) !important;
+}
+
+/* Fill ma te same strefy co logika siły skoku. */
+#motionHud .squat-meter-fill {
+    background:linear-gradient(
+        180deg,
+        rgba(105,255,164,.96) 0%,
+        rgba(105,255,164,.96) 39.9%,
+        rgba(255,214,86,.98) 40%,
+        rgba(255,214,86,.98) 69.9%,
+        rgba(255,151,67,.98) 70%,
+        rgba(255,151,67,.98) 89.9%,
+        rgba(255,91,73,.98) 90%,
+        rgba(255,91,73,.98) 100%
+    ) !important;
+}
+
+/* Stare ticki liczbowej skali nie mają sugerować innych progów. */
+#motionHud .vertical-float-scale .vtick {
+    opacity:0 !important;
+}

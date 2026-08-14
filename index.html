@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#101522">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Wyzwanie Bungee</title>
+    <link rel="stylesheet" href="style.css?v=110">
+</head>
+<body>
+    <main class="game-container">
+        <div class="canvas-wrapper">
+            <video id="cameraFeed" class="camera-feed" autoplay muted playsinline aria-hidden="true"></video>
+            <canvas id="poseCanvas" class="pose-canvas" width="1" height="1" aria-hidden="true"></canvas>
+            <canvas id="gameCanvas" width="540" height="960"></canvas>
+
+            <div id="positionGuide" class="position-guide calibrating" aria-hidden="true">
+                <div class="position-guide-box">
+                    <span id="guideTitle">KALIBRACJA</span>
+                    <small id="guideText">Stań prosto. Kamera musi widzieć oba barki.</small>
+                    <strong id="guidePhase">Nie ruszaj się przez chwilę.</strong>
+                </div>
+            </div>
+<div id="trackingAlert" class="tracking-alert hidden" aria-live="assertive"></div>
+
+            <div id="calibrationConfirm" class="calibration-confirm hidden" aria-live="polite">
+                <strong>Pozycja zapamiętana</strong>
+                <small>Odłóż telefon i nie ruszaj nim podczas gry.</small>
+                <button id="calibrationStartButton" type="button">START GRY</button>
+            </div>
+
+            <header class="game-hud" aria-label="Statystyki gry">
+                <div class="hud-card score-card">
+                    <span class="hud-label">Wynik</span>
+                    <strong id="scoreDisplay" class="hud-value">0</strong>
+                </div>
+
+                <div class="level-card" aria-live="polite">
+                    <span id="difficultyDisplay">Poziom 1</span>
+                    <span id="comboDisplay">Combo x0</span>
+                </div>
+                <div id="boosterStatus" class="booster-status hud-hidden" aria-hidden="true">
+                    <span class="booster-time"></span>
+                </div>
+
+                <div class="hud-card best-card">
+                    <span class="hud-label">Rekord</span>
+                    <strong id="bestScoreDisplay" class="hud-value">0</strong>
+                </div>
+            </header>
+
+
+            <aside class="power-dock" aria-label="Aktywne bonusy">
+                <div id="speedPowerCard" class="power-card speed-power">
+                    <span class="power-icon">⚡</span><span class="power-copy"><strong>Przyspieszenie</strong><small class="power-time"></small></span><i></i>
+                </div>
+                <div id="slowPowerCard" class="power-card slow-power">
+                    <span class="power-icon">❄️</span><span class="power-copy"><strong>Spowolnienie</strong><small class="power-time"></small></span><i></i>
+                </div>
+                <div id="shieldPowerCard" class="power-card shield-power">
+                    <span class="power-icon">🛡️</span><span class="power-copy"><strong>Tarcza</strong><small class="power-time"></small></span><i></i>
+                </div>
+            </aside>
+
+            <div id="eventBanner" class="event-banner"><strong>WYDARZENIE</strong><span></span></div>
+            <div id="rewardToast" class="reward-toast" aria-live="polite">
+                <span>PIZZA BANDITA</span>
+                <strong></strong>
+                <small></small>
+            </div>
+            <div class="fever-meter" aria-label="Pasek Fever"><span>🔥 FEVER</span><i><b id="feverFill"></b></i></div>
+            <div class="mini-effects"><span id="lifeBadge"></span><span id="magnetBadge"></span><span id="doubleBadge"></span></div>
+
+            <div class="corner-actions">
+                <button id="soundButton" class="icon-button" aria-label="Dźwięk">🔊</button>
+                <button id="pauseButton" class="icon-button" aria-label="Pauza">Ⅱ</button>
+            </div>
+
+            <section id="pauseScreen" class="game-screen hidden">
+                <div class="screen-panel compact"><span class="screen-kicker">PAUZA</span><h2>Gra wstrzymana</h2><p>Naciśnij P, Esc lub przycisk pauzy.</p></div>
+            </section>
+
+            <section id="startScreen" class="game-screen">
+                <div class="screen-panel stable-welcome">
+                    <span class="screen-kicker">WYZWANIE BUNGEE</span>
+                    <h1>Przysiad steruje lotem</h1>
+                    <p class="stable-intro">Ustaw telefon stabilnie. Stań przodem tak, aby kamera widziała oba barki.</p>
+
+                    <div class="stable-steps">
+                        <div><b>1</b><span><strong>Ustaw telefon</strong><small>Stabilnie i nieruchomo</small></span></div>
+                        <div><b>2</b><span><strong>Pokaż barki</strong><small>Stań prosto, przodem</small></span></div>
+                        <div><b>3</b><span><strong>Rób przysiady</strong><small>Głębiej = wyższy skok</small></span></div>
+                    </div>
+
+                    <div class="motion-cycle-explainer squat-rule-explainer" aria-label="Sterowanie przysiadem">
+                        <div>
+                            <span class="motion-arrow">↕</span>
+                            <span>
+                                <strong>PRZYSIAD → SKOK</strong>
+                                <small></small>
+                            </span>
+                        </div>
+                        <i></i>
+                        <div>
+                            <span class="motion-arrow">↗</span>
+                            <span>
+                                <strong>GŁĘBIEJ → WYŻEJ</strong>
+                                <small></small>
+                            </span>
+                        </div>
+                    </div>
+
+                    <button id="cameraButton" class="camera-button stable-cta" type="button">
+                        <span>📷</span>
+                        <strong>Uruchom kamerę</strong>
+                        <small>Krótka kalibracja przed startem</small>
+                    </button>
+
+                    <p id="cameraMessage" class="camera-message stable-message">Stań prosto. Zapisz punkt 0. Gotowe.</p>
+
+                    <div class="stable-loot stable-loot-three">
+                        <div>
+                            <img src="assets/coin.png" alt="">
+                            <span><strong>Żeton</strong><small>Punkty i combo.</small></span>
+                        </div>
+                        <div class="automat-item">
+                            <img src="assets/slot_pickup.png" alt="">
+                            <span><strong>Automat</strong><small>Losowy efekt w grze.</small></span>
+                        </div>
+                        <div class="pizza-item">
+                            <img src="assets/booster.png" alt="">
+                            <span><strong>Pizza Bandita</strong><small>Specjalny bonus lub nagroda.</small></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gameOverScreen" class="game-screen hidden">
+                <div class="screen-panel">
+                    <span class="screen-kicker">KONIEC GRY</span>
+                    <h2>Spróbuj ponownie</h2>
+                    <p class="final-result">Twój wynik <strong id="finalScore">0</strong></p>
+                    <div class="results-grid"><span>Rekord<strong id="finalBest">0</strong></span><span>Najlepsze combo<strong id="finalCombo">0</strong></span></div>
+                    <button id="restartButton">Zagraj ponownie</button>
+                    <p class="shortcut">Sterowanie postacią tylko ruchem</p>
+                </div>
+            </section>
+
+            <div id="motionHud" class="motion-hud squat-meter float-meter vertical-float-meter" aria-live="polite">
+                <div class="vertical-float-scale" aria-label="Wychylenie przysiadu">
+                    <span class="vtick vtneg4">−4</span>
+                    <span class="vtick vtneg2">−2</span>
+                    <span class="vtick vtzero">0</span>
+                    <span class="vtick vtpos2">+2</span>
+                    <span class="vtick vtpos4">+4</span>
+                    <i class="vertical-float-line"></i>
+                    <i id="squatMeterFill" class="squat-meter-fill" aria-hidden="true"></i>
+                    <i class="meter-power-mark meter-power-low" aria-hidden="true"></i>
+                    <i class="meter-power-mark meter-power-mid" aria-hidden="true"></i>
+                    <i class="meter-power-mark meter-power-high" aria-hidden="true"></i>
+                    <b id="squatFloat" class="vertical-squat-float"><em id="squatFloatValue">0.0</em></b>
+                </div>
+                <div class="vertical-float-copy">
+                    <strong id="squatPhaseLabel">KALIBRACJA</strong>
+                    <span id="squatPowerText">STREFA 0</span>
+                    <small id="squatQualityLabel">—</small>
+                    <span id="cameraStatus">📷 Kamera wyłączona</span>
+                </div>
+                <i class="legacy-motion-track" aria-hidden="true"><b id="motionLevel"></b></i>
+                <i id="trackingDot" class="tracking-dot tracking-wait" aria-hidden="true"></i>
+            </div>
+            <div class="controls-hint">TYLKO PRZYSIAD • głębiej = mocniejszy skok</div>
+        </div>
+    </main>
+    <script src="game.js?v=110"></script>
+
+    <section id="deviceGate" class="device-gate hidden" aria-live="polite">
+        <div class="device-gate-card">
+            <div class="device-gate-icon">📱</div>
+            <h1>GRA DZIAŁA NA TELEFONIE</h1>
+            <p>Otwórz tę stronę na smartfonie, aby zagrać.</p>
+        </div>
+    </section>
+
+</body>
+</html>
